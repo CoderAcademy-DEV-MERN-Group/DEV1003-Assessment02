@@ -5,8 +5,9 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "test-seed": "node ./src/database/seed.js",
     "start": "node ./src/index.js",
-    "dev": "node --env-file-if-exists=.env --watch-path=./ ==watch-preserve-output ./src/index.js"
+    "dev": "node --env-file-if-exists=.env --watch-path=./ --watch-preserve-output ./src/index.js"
   },
   "repository": {
     "type": "git",
