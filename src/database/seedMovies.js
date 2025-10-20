@@ -71,19 +71,19 @@ async function seedDatabase() {
           await Movie.create(movieData);
           createdCount++;
           console.log(
-            `${index + 1}/${movieEntries.length}: ${title} ✅ CREATED`
+            `${index + 1}/${movieEntries.length}: ${title} CREATED`
           );
         } catch (error) {
           errorCount++;
           console.log(
-            `${index + 1}/${movieEntries.length}: ${title} ❌ DB ERROR:`,
+            `${index + 1}/${movieEntries.length}: ${title} DB ERROR:`,
             error.message
           );
         }
       } else {
         errorCount++;
         console.log(
-          `${index + 1}/${movieEntries.length}: ${title} ❌ FETCH FAILED`
+          `${index + 1}/${movieEntries.length}: ${title} FETCH FAILED`
         );
       }
 
@@ -92,7 +92,7 @@ async function seedDatabase() {
     }
 
     console.log(
-      `🎉 Seed completed! Created: ${createdCount}, Errors: ${errorCount}`
+      `Seed completed! Created: ${createdCount}, Errors: ${errorCount}`
     );
   } catch (error) {
     console.error("Seed failed: ", error);
