@@ -70,9 +70,7 @@ async function seedDatabase() {
         try {
           await Movie.create(movieData);
           createdCount++;
-          console.log(
-            `${index + 1}/${movieEntries.length}: ${title} CREATED`
-          );
+          console.log(`${index + 1}/${movieEntries.length}: ${title} CREATED`);
         } catch (error) {
           errorCount++;
           console.log(
