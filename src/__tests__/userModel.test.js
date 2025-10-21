@@ -71,4 +71,22 @@ describe('User Schema validation', () => {
 
     await expect(User.create(userData2)).rejects.toThrow();
   });
+
+	test('should reject duplicate email', async () => {
+    const userData1 = {
+      username: 'originalemail',
+      email: 'email@email.com',
+      password: 'PassTest123!',
+    };
+
+    const userData2 = {
+      username: 'duplicateemail',
+      email: 'email@email.com',
+      password: 'PassTest123!',
+    };
+
+		await User.create(userData1);
+
+		await expect (User.create(userData2)).rejects.toThrow();
+	});
 });
