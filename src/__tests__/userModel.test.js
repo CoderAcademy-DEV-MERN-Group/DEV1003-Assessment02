@@ -1,25 +1,21 @@
-import { MongoMemoryServer } from 'mongodb-memory-server';
-import mongoose from 'mongoose';
-import { afterAll, afterEach, beforeAll, describe, expect, test } from '@jest/globals';
+import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
 
 import User from '../models/User';
+import { clearTestDb, setupTestDb, teardownTestDb } from './setup/testDb';
 
 describe('User Schema validation', () => {
   let mongoServer;
 
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const uri = mongoServer.getUri();
-    await mongoose.connect(uri);
+    await setupTestDb();
   });
 
   afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoServer.stop();
+    await teardownTestDb();
   });
 
-  afterEach(async () => {
-    await User.deleteMany({});
+  beforeEach(async () => {
+    await clearTestDb();
   });
 
   test('Create user with valid data and hash password before saving', async () => {
@@ -38,11 +34,41 @@ describe('User Schema validation', () => {
     expect(testUser.isAdmin).toBe(false);
   });
 
-	test('Should reject weak passwords', async () => {
-		const userData = {
-			username: 'weakuser',
-			email: 'weak@test.com',
-			password: 'weak'
-		}
-	})
+  test('should reject weak passwords', async () => {
+    const userData = {
+      username: 'weakuser',
+      email: 'weak@test.com',
+      password: 'weak',
+    };
+
+    await expect(User.create(userData)).rejects.toThrow();
+  });
+
+  test('should reject incorrect email format', async () => {
+    const userData = {
+      username: 'invalidemail',
+      email: 'invalid-email-email.com',
+      password: 'TestPass123!',
+    };
+
+    await expect(User.create(userData)).rejects.toThrow();
+  });
+
+  test('should reject duplicate username', async () => {
+    const userData1 = {
+      username: 'duplicate',
+      email: 'email@email.com',
+      password: 'PassTest123!',
+    };
+
+    const userData2 = {
+      username: 'duplicate',
+      email: 'email1@email.com',
+      password: 'PassTest123!',
+    };
+
+    await User.create(userData1);
+
+    await expect(User.create(userData2)).rejects.toThrow();
+  });
 });

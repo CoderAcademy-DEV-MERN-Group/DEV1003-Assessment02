@@ -8,6 +8,7 @@
     "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --testTimeout=10000",
     "test:watch": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "seed:movies": "node --es-module-specifier-resolution=node --env-file-if-exists=.env ./src/database/seedMovies.js",
     "start": "NODE_ENV=production node ./src/index.js",
     "dev": "NODE_ENV=development node --env-file-if-exists=.env --watch-path=./ --watch-preserve-output ./src/index.js",
     "lint": "eslint \"src/**/*.{js,mjs,cjs}\"",
