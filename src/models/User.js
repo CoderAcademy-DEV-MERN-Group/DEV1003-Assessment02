@@ -86,7 +86,7 @@ const { Schema } = mongoose;
 //   },
 // );
 
-// reel progress subdoc schema (combined with ratings to keep simple for now)
+// reel progress sub doc schema (combined with ratings to keep simple for now)
 const reelProgressSchema = new mongoose.Schema(
   {
     movie: {
@@ -111,7 +111,7 @@ const reelProgressSchema = new mongoose.Schema(
   },
   /*
   thinking if we need to add explicit watchedAt timestamp field here to use for leaderboards controller logic?
-  as below timestamp: true option, will only create timestamps for when the subdoc is created/modified
+  as below timestamp: true option, will only create timestamps for when the sub doc is created/modified
   but not explicity when marked as watched
   */
   {
@@ -126,6 +126,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     minlength: 2,
     trim: true,
+    lowercase: true,
   },
   // not implementing profilePicture for now (maybe use avatars in React instead)
   password: {
@@ -147,8 +148,8 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
     lowercase: true,
+    unique: true,
     validate: {
       validator: (email) => isEmail(email),
       message: 'Please enter a valid email',
