@@ -3,7 +3,7 @@
 import { readFileSync } from 'fs';
 import mongoose from 'mongoose';
 import fetch from 'node-fetch';
-import Movie from '../models/Movie';
+import Movie from '../models/Movie.js';
 
 const API_KEY = process.env.OMDB_API_KEY;
 
