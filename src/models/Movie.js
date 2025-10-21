@@ -1,10 +1,10 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const movieSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: [true, "Movie title is required"],
+      required: [true, 'Movie title is required'],
       trim: true,
       maxlength: 200,
     },
@@ -49,7 +49,7 @@ const movieSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-export default mongoose.model("Movie", movieSchema);
+export default mongoose.model('Movie', movieSchema);
