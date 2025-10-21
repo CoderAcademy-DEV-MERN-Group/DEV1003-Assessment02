@@ -1,6 +1,20 @@
-import { describe, it, expect, beforeAll, each } from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import request from 'supertest';
-import app from '../server';
+import { app } from '../server';
+import { setupTestDb, clearTestDb, teardownTestDb } from './setup/testDb';
+
+// Setup, clear and teardown in memory MongoDB database for testing
+beforeAll(async () => {
+  await setupTestDb();
+});
+
+afterAll(async () => {
+  await teardownTestDb();
+});
+
+beforeEach(async () => {
+  await clearTestDb();
+});
 
 // A basic test to verify Jest is set up correctly
 describe('Jest setup test', () => {
@@ -33,15 +47,15 @@ describe('Empty and Invalid Server Endpoints Work', () => {
 describe('Health Check Endpoint Works', () => {
   let res;
   beforeAll(async () => {
-    res = await request(app).get('/health');
+    res = await request(app).get('/database-health');
   });
 
-  it('should return 200 for GET /health', async () => {
+  it('should return 200 for GET /database-health', async () => {
     expect(res.statusCode).toBe(200);
   });
 
   const properties = ['readyState', 'dbName', 'dbModels', 'dbHost', 'dbPort', 'dbUser'];
-  each(properties)(`should have %s in response body`, (prop) => {
+  it.each(properties)(`should have %s in response body`, (prop) => {
     expect(res.body).toHaveProperty(prop);
   });
 

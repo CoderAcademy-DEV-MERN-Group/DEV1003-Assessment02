@@ -5,11 +5,11 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --testTimeout=10000",
-    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
-    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
-    "start": "node ./src/index.js",
-    "dev": "node --env-file-if-exists=.env --watch-path=./ --watch-preserve-output ./src/index.js",
+    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --testTimeout=10000",
+    "test:watch": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "start": "NODE_ENV=production node ./src/index.js",
+    "dev": "NODE_ENV=development node --env-file-if-exists=.env --watch-path=./ --watch-preserve-output ./src/index.js",
     "lint": "eslint \"src/**/*.{js,mjs,cjs}\"",
     "lint-fix": "npm run lint -- --fix",
     "format": "prettier \"{src,tests}/**/*.{js,json}\" --write"
@@ -28,10 +28,11 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.19.1",
+    "mongoose": "^8.19.2",
     "node-fetch": "^3.3.2",
     "validator": "^13.15.15"
   },
