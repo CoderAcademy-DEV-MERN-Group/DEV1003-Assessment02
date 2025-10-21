@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, each } from '@jest/globals';
 import request from 'supertest';
-import app from '../server.js';
+import app from '../server';
 
 // A basic test to verify Jest is set up correctly
 describe('Jest setup test', () => {
