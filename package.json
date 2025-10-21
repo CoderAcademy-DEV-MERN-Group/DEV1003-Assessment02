@@ -26,6 +26,7 @@
   },
   "homepage": "https://github.com/CoderAcademy-DEV-MERN-Group/DEV1003-Assessment02#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
