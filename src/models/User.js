@@ -167,7 +167,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // hash pw before doc is saved to db (when pw created or changed)
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function hashPassword(next) {
   if (!this.isModified('password')) {
     return next();
   }
