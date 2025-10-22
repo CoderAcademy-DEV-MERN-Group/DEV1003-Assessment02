@@ -16,6 +16,7 @@ import {
   RatingController,
   UserController,
 } from './controllers/index';
+import auth from './routes/index';
 
 dotenv.config(); // Make .env data available for use
 const app = express(); // Create the Express app object
@@ -59,6 +60,7 @@ app.use('/lists', ListController);
 app.use('/movies', MovieController);
 app.use('/ratings', RatingController);
 app.use('/users', UserController);
+app.use('/auth', auth);
 
 /* Connect to database, using different DBs depending on environment
 (test uses mongodb-memory-server, handled in test setup) */
