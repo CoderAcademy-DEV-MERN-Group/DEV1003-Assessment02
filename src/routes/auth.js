@@ -38,7 +38,7 @@ router.post('/login', validateLogin, async (request, response, next) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      const error = new Error(`No user account with email ${email} found`);
+      const error = new Error(`No user account with email '${email}' found`);
       error.statusCode = 404;
       return next(error);
     }
