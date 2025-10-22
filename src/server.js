@@ -8,6 +8,7 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 import { databaseConnector } from './config/database';
+import defaultErrorHandler from './utils/errorHandler';
 import {
   FriendshipController,
   LeaderboardController,
@@ -142,10 +143,7 @@ if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
 // Logs full error on server, sends generic message to client for security
 // Implement specific error handling above this later for better client messages
 // eslint-disable-next-line no-unused-vars
-app.use((err, req, res, _next) => {
-  console.error(err);
-  res.status(500).json({ error: 'An unexpected error occurred. Please try again later.' });
-});
+app.use(defaultErrorHandler);
 
 // Keep 404 route at the bottom, should only trigger if no proceeding route was matched
 app.all(/.*/, (req, res) => {
