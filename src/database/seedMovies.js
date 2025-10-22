@@ -3,9 +3,12 @@
 import { readFileSync } from 'fs';
 import mongoose from 'mongoose';
 import fetch from 'node-fetch';
+import dotenv from 'dotenv';
 
 // eslint-disable-next-line import/extensions
 import Movie from '../models/Movie.js';
+
+dotenv.config();
 
 const API_KEY = process.env.OMDB_API_KEY;
 
