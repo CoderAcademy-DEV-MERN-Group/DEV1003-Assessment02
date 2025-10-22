@@ -1,10 +1,10 @@
-import { afterAll, beforeAll, describe, expect, test } from '@jest/globals';
+import { afterAll, beforeAll, beforeEach, describe, expect, test } from '@jest/globals';
 
 import User from '../models/User';
 import { clearTestDb, setupTestDb, teardownTestDb } from './setup/testDb';
 
 describe('User Schema validation', () => {
-  let mongoServer;
+  // let mongoServer; - was declared but not used
 
   beforeAll(async () => {
     await setupTestDb();
@@ -14,6 +14,7 @@ describe('User Schema validation', () => {
     await teardownTestDb();
   });
 
+  // beforeEach hadn't been imported
   beforeEach(async () => {
     await clearTestDb();
   });
@@ -72,7 +73,7 @@ describe('User Schema validation', () => {
     await expect(User.create(userData2)).rejects.toThrow();
   });
 
-	test('should reject duplicate email', async () => {
+  test('should reject duplicate email', async () => {
     const userData1 = {
       username: 'originalemail',
       email: 'email@email.com',
@@ -85,8 +86,8 @@ describe('User Schema validation', () => {
       password: 'PassTest123!',
     };
 
-		await User.create(userData1);
+    await User.create(userData1);
 
-		await expect (User.create(userData2)).rejects.toThrow();
-	});
+    await expect(User.create(userData2)).rejects.toThrow();
+  });
 });
