@@ -5,5 +5,6 @@ if (process.env.NODE_ENV !== 'test') await connectToDatabase(databaseURL);
 
 // Start the server to listen for requests
 app.listen(PORT, HOST, () => {
+  // eslint-disable-next-line no-console
   console.log(`Server is running at http://${HOST}:${PORT}`);
 });
