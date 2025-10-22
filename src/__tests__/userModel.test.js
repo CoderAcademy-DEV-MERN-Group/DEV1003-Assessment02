@@ -4,6 +4,8 @@ import User from '../models/User';
 import { clearTestDb, setupTestDb, teardownTestDb } from './setup/testDb';
 
 describe('User Schema validation', () => {
+  // let mongoServer; - was declared but not used
+
   beforeAll(async () => {
     await setupTestDb();
   });
@@ -12,6 +14,7 @@ describe('User Schema validation', () => {
     await teardownTestDb();
   });
 
+  // beforeEach hadn't been imported
   beforeEach(async () => {
     await clearTestDb();
   });
