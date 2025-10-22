@@ -3,9 +3,10 @@ export const validateEnv = () => {
   const required = ['JWT_SECRET_KEY', 'TOKEN_HEADER_KEY', 'MONGODB_URI', 'NODE_ENV'];
   const missing = required.filter((env) => !process.env[env]);
 
+  // IF anything required is in the missing array, alert and stop the server running
   if (missing.length > 0) {
     console.error('CRITICAL: Missing required environment variables: ');
-    missing.forEach((env) => console.error(`  - ${env}`));
+    missing.forEach((env) => console.error(`  - ${env}`)); // Tells us which variables are missing
     process.exit(1);
   }
 
@@ -13,18 +14,19 @@ export const validateEnv = () => {
   const important = ['OMDB_API_KEY'];
   const missingImportant = important.filter((env) => !process.env[env]);
 
+  // IF anything important is in the missing array, warn in the console, but continue running the server
   if (missingImportant.length > 0 && process.env.NODE_ENV !== 'production') {
     console.warn(' DEVELOPMENT: Missing imporant environment variables');
-    missingImportant.forEach((env) => console.warn(`  - ${env} (some features disabled)`));
+    missingImportant.forEach((env) => console.warn(`  - ${env} (some features disabled)`)); // Tells us which variables are missing and the impact, but app will run
   }
 
-  // Security checks for encrypted variables
+  // Security checks that JWT secret key is not a standard variable or example
   if (process.env.NODE_ENV === 'production') {
     if (
       process.env.JWT_SECRET_KEY.includes('example') ||
       process.env.JWT_SECRET_KEY === 'your_secret_key_here'
     ) {
-      console.error('SECURITY ERROR: Change JWT_SECRET_KEY in production!');
+      console.error('SECURITY ERROR: Change JWT_SECRET_KEY in production!'); // Reminder to set up proper key, stops server running, an example JWT Key cannot ever run in production
       process.exit(1);
     }
   }
