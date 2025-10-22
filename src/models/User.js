@@ -66,7 +66,7 @@ const userSchema = new Schema({
   reelProgress: [reelProgressSchema],
 });
 
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function hashPassword(next) {
   // Only run if the password is modified (created or updated)
   if (!this.isModified('password')) return next();
 
