@@ -18,6 +18,7 @@ router.post('/register', validateUserRegistration, async (request, response, nex
     const token = generateToken(user);
 
     return response.status(201).json({
+      success: true,
       message: 'User registration complete',
       token,
       user: {
@@ -38,21 +39,26 @@ router.post('/login', validateLogin, async (request, response, next) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      const error = new Error(`No user account with email '${email}' found`);
-      error.statusCode = 404;
-      return next(error);
+      return response.status(401).json({
+        success: false,
+        message: 'Authentication failed',
+        errors: ['Incorrect email or password'],
+      });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      const error = new Error('Invalid password, please try again');
-      error.statusCode = 401;
-      return next(error);
+      return response.status(401).json({
+        success: false,
+        message: 'Authentication failed',
+        errors: ['Incorrect email or password'],
+      });
     }
 
     const token = generateToken(user);
 
-    return response.status(201).json({
+    return response.status(200).json({
+      success: true,
       message: 'Login successful!',
       token,
       user: {
@@ -68,7 +74,10 @@ router.post('/login', validateLogin, async (request, response, next) => {
 });
 
 router.post('/logout', (request, response) => {
-  response.send('POST request to logout page');
+  return response.status(200).json({
+    success: true,
+    message: 'Log out successful',
+  });
 });
 
 export default router;

@@ -9,16 +9,19 @@ const generateToken = (user) => {
     isAdmin: user.isAdmin,
   };
 
-  // Token expires in 7 days
+  // Token expires in 24hrs - best balance of security, does not need to implement refresh tokens
+  // and blacklisting through database or memory. Later implementation would use refresh tokens
+  // and blacklisting
   return jwt.sign(payload, jwtConfig.JWT_SECRET_KEY, {
-    expiresIn: '7d',
+    expiresIn: '24h',
   });
 };
 
 // middleware to verify JWT token on protected Routes
 const verifyToken = (request, response, next) => {
   // Get token from Authorization header, remove the Bearer prefix to get just the token
-  const token = request.header(jwtConfig.TOKEN_HEADER_KEY)?.replace('Bearer', '');
+
+  const token = request.header(jwtConfig.TOKEN_HEADER_KEY)?.replace('Bearer ', '');
 
   // Check if token exists in the request headers
   if (!token) {
