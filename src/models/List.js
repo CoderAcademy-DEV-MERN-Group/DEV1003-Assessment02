@@ -12,34 +12,32 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 // List schema for custom lists created by users
-const listSchema = new Schema(
-  {
-    // array of movie object IDs
-    movies: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Movie',
-        required: true,
-      },
-    ],
-    listName: {
-      type: String,
-      required: true,
-      unique: true,
-      minlength: 2,
-      lowercase: true,
-      trim: true,
-    },
-    description: {
-      type: String,
-    },
-    creator: {
+const listSchema = new Schema({
+  // array of movie object IDs
+  movies: [
+    {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: 'Movie',
       required: true,
     },
-    // check to clarify discriminator section
-  }
-);
+  ],
+  listName: {
+    type: String,
+    required: true,
+    unique: true,
+    minlength: 2,
+    lowercase: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+  },
+  creator: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  // check to clarify discriminator section
+});
 
-export const
+export const List = mongoose.model('List', listSchema);
