@@ -1,8 +1,7 @@
-// set up JWT token creation
-
 import jwt from 'jsonwebtoken';
 import jwtConfig from '../config/config';
 
+// Create JWT token for authenticated user
 const generateToken = (user) => {
   const payload = {
     userId: user.id,
@@ -10,14 +9,18 @@ const generateToken = (user) => {
     isAdmin: user.isAdmin,
   };
 
+  // Token expires in 7 days
   return jwt.sign(payload, jwtConfig.JWT_SECRET_KEY, {
     expiresIn: '7d',
   });
 };
 
+// middleware to verify JWT token on protected Routes
 const verifyToken = (request, response, next) => {
+  // Get token from Authorization header, remove the Bearer prefix to get just the token
   const token = request.header(jwtConfig.TOKEN_HEADER_KEY)?.replace('Bearer', '');
 
+  // Check if token exists in the request headers
   if (!token) {
     return response.status(401).json({
       success: false,
@@ -26,10 +29,16 @@ const verifyToken = (request, response, next) => {
   }
 
   try {
+    // Verify the token using our secret key
+    // Should throw error if token is invalid, expired, or tampered with
     const decoded = jwt.verify(token, jwtConfig.JWT_SECRET_KEY);
+
+    // Attach decoded user information to the request object
+    // User data is made available to any subsequent middleware/route handlers
     request.user = decoded;
     return next();
   } catch {
+    // Handle any token verification errors (invalid signature, expired token etc)
     return response.status(400).json({
       success: false,
       message: 'Invalid token',
