@@ -1,5 +1,11 @@
-import Friendship from '../models/Friendship';
-import User from '../models/User';
+import { Router } from 'express';
+
+const router = Router();
+
+export default router;
+
+// import Friendship from '../models/Friendship';
+// import User from '../models/User';
 
 // Controller for sending friend request
 // Route = POST /friends/request
