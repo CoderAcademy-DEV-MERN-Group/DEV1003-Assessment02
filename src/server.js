@@ -83,9 +83,6 @@ async function connectToDatabase(uri) {
   }
 }
 
-// Only connect to database if not in test environment (tests use different db setup)
-if (process.env.NODE_ENV !== 'test') await connectToDatabase(databaseURL);
-
 /* Return useful details from the database connection, properties here:
 https://mongoosejs.com/docs/api/connection.html */
 app.get('/database-health', (req, res) => {
@@ -159,4 +156,4 @@ app.all(/.*/, (req, res) => {
 });
 
 // Export everything needed to run server
-export { HOST, PORT, app };
+export { HOST, PORT, app, connectToDatabase, databaseURL };
