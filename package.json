@@ -8,8 +8,9 @@
     "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --testTimeout=10000",
     "test:watch": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --coverage",
-    "start": "NODE_ENV=production node ./src/index.js",
-    "dev": "NODE_ENV=development node --env-file-if-exists=.env --watch-path=./ --watch-preserve-output ./src/index.js",
+    "seed:movies": "tsx ./src/database/seedMovies.js",
+    "start": "NODE_ENV=production tsx ./src/index.js",
+    "dev": "NODE_ENV=development tsx watch ./src/index.js",
     "lint": "eslint \"src/**/*.{js,mjs,cjs}\"",
     "lint-fix": "npm run lint -- --fix",
     "format": "prettier \"{src,tests}/**/*.{js,json}\" --write"
@@ -32,6 +33,7 @@
     "express": "^5.1.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.20.0",
     "mongoose": "^8.19.2",
     "node-fetch": "^3.3.2",
     "validator": "^13.15.15"
