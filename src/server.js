@@ -115,7 +115,7 @@ app.get('/', (req, res) => {
 /* Route to dump all database data (will only be available in development and test environments)
 DO NOT USE IN PRODUCTION - EXPOSES ALL DATA TO CLIENT!!! */
 if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
-  app.get('/databaseDump', async (req, res) => {
+  app.get('/database-dump', async (req, res) => {
     // Get names of all collections in DB
     const collections = await mongoose.connection.db.listCollections().toArray();
     // For each collection, get all their data and add to dumpContainer

@@ -3,7 +3,9 @@
 import { readFileSync } from 'fs';
 import mongoose from 'mongoose';
 import fetch from 'node-fetch';
-import Movie from '../models/Movie';
+
+// eslint-disable-next-line import/extensions
+import Movie from '../models/Movie.js';
 
 const API_KEY = process.env.OMDB_API_KEY;
 

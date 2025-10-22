@@ -1,7 +1,7 @@
 // this is one of the two major ones, users are integral
 
 import mongoose from 'mongoose';
-import { isStrongPassword, isEmail } from 'validator';
+import validator from 'validator';
 import bcrypt from 'bcrypt';
 
 const { Schema } = mongoose;
@@ -38,7 +38,7 @@ const userSchema = new Schema({
     required: true,
     validate: {
       validator: (password) =>
-        isStrongPassword(password, {
+        validator.isStrongPassword(password, {
           minLength: 8,
           minLowercase: 1,
           minUppercase: 1,
@@ -55,7 +55,7 @@ const userSchema = new Schema({
     unique: true,
     lowercase: true,
     validate: {
-      validator: (email) => isEmail(email),
+      validator: (email) => validator.isEmail(email),
       message: 'Please enter a valid email',
     },
   },
