@@ -40,4 +40,4 @@ const listSchema = new Schema({
   // check to clarify discriminator section
 });
 
-export const List = mongoose.model('List', listSchema);
+export default List = mongoose.model('List', listSchema);
