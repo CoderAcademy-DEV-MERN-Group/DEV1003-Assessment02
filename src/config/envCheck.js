@@ -1,6 +1,6 @@
 export const validateEnv = () => {
   // CRITICAL application env variables, the app will not run without these
-  const required = ['JWT_SECRET_KEY', 'TOKEN_HEADER_KEY', 'MONGODB_URI', 'NODE_ENV'];
+  const required = ['JWT_SECRET_KEY', 'TOKEN_HEADER_KEY', 'DATABASE_URI'];
   const missing = required.filter((env) => !process.env[env]);
 
   // IF anything required is in the missing array, alert and stop the server running

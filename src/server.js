@@ -7,7 +7,7 @@ import helmet from 'helmet';
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import validateEnv from './config/envCheck';
+import { validateEnv } from './config/envCheck';
 import { databaseConnector } from './config/database';
 import defaultErrorHandler from './utils/errorHandler';
 import {
