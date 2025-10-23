@@ -15,7 +15,7 @@
 // router.post('/request', sendFriendRequest);
 
 // // Route to respond to a friend request to accept
-// // POST /friends/respond
+// // POST /friends/respond - or PATCH if only updating boolean status?
 // router.post('/respond', respondToFriendRequest);
 
 // // Route to get friendship status
