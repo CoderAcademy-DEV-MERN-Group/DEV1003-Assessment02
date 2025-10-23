@@ -29,12 +29,21 @@ describe('Auth Routes', () => {
         success: true,
         message: 'User registration complete',
         token: expect.any(String),
+        // isAdmin should not be included by default
         user: {
           username: userData.username,
           email: userData.email,
         },
       });
       expect(response.body.user.isAdmin).toBeUndefined();
+    });
+    it('should reject duplicate email or username', async () => {
+      const userData = userFixture();
+      await User.create(userData)
+      const response = await request(app).post('/auth/register').send(userData).expect(409);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toMatch('Email or username already exists')
     });
   });
 });
