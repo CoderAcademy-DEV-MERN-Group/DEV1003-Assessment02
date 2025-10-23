@@ -37,13 +37,47 @@ describe('Auth Routes', () => {
       });
       expect(response.body.user.isAdmin).toBeUndefined();
     });
-    it('should reject duplicate email or username', async () => {
-      const userData = userFixture();
-      await User.create(userData)
-      const response = await request(app).post('/auth/register').send(userData).expect(409);
+
+    it('should reject duplicate email', async () => {
+      const existingUser = await User.create(userFixture());
+      const newUser = userFixture({
+        username: 'differentusername',
+        email: existingUser.email,
+      });
+
+      const response = await request(app).post('/auth/register').send(newUser).expect(409);
 
       expect(response.body.success).toBe(false);
-      expect(response.body.message).toMatch('Email or username already exists')
+      expect(response.body.message).toMatch('Email or username already exists');
+    });
+
+    it('should reject duplicate username', async () => {
+      const existingUser = await User.create(userFixture());
+      const newUser = userFixture({
+        username: existingUser.username,
+        email: 'differenteemail@emal.com',
+      });
+
+      const response = await request(app).post('/auth/register').send(newUser).expect(409);
+
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toMatch('Email or username already exists');
+    });
+  });
+
+  describe('POST /auth/login', () => {
+    it('should successfully login with correct credentials', async () => {
+      const userData = userFixture();
+      await User.create(userData);
+
+      const response = (await request(app).post('/auth/login'))
+        .send({
+          email: userData.email,
+          password: userData.password,
+        })
+        .expect(200);
+
+      expect(response.body).toMatch
     });
   });
 });
