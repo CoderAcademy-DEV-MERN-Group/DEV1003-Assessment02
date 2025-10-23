@@ -29,6 +29,8 @@ const validateUserRegistration = async (request, response, next) => {
 
 const validateLogin = (request, response, next) => {
   const { email, password } = request.body;
+
+  // IF there is no email or password provided
   if (!email || !password) {
     return response.status(400).json({
       error: 'Email and password are required',
