@@ -22,15 +22,15 @@ const friendshipSchema = new Schema({
     ref: 'User',
     required: true,
   },
-  // confirmed: {
-  //   type: Boolean,
-  //   default: false,
-  // },
-  friendRequestStatus: {
-    type: String,
-    enum: ['pending', 'accepted', 'rejected'],
-    default: 'pending',
+  isAccepted: {
+    type: Boolean,
+    default: false,
   },
+  // friendRequestStatus: {
+  //   type: String,
+  //   enum: ['pending', 'accepted', 'rejected'],
+  //   default: 'pending',
+  // },
 });
 
 // prevent duplicate friend requests between same two users

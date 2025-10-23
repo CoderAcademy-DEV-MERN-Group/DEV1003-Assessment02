@@ -14,7 +14,7 @@
 // // POST /friends/request
 // router.post('/request', sendFriendRequest);
 
-// // Route to respond to a friend request to accept or reject
+// // Route to respond to a friend request to accept
 // // POST /friends/respond
 // router.post('/respond', respondToFriendRequest);
 
