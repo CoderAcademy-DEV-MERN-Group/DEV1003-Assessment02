@@ -26,4 +26,8 @@
 // // GET /friends/list
 // router.get('/list/:userId', getFriendsList);
 
+// // Route to unfriend a user
+// // DELETE /friends/unfriend
+// router.delete('/unfriend', unfriendUser);
+
 // export default router;
