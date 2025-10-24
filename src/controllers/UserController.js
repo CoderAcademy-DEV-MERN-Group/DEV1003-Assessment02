@@ -3,15 +3,15 @@ import User from '../models/User';
 // Get user profile by ID or user object attached to request
 export const getUserProfile = async (req, res, next) => {
   try {
-    // If userID in params, use it, else use req.user.userID, if req.user not there is undefined
-    const userID = req.params.userID || req.user?.userID;
+    // If userId in params, use it, else use req.user.userId, if req.user not there is undefined
+    const userId = req.params.userId || req.user?.userId;
     // select with '-' excludes field, exec forces true promise for consistency
-    const user = await User.findById(userID).select('-password').exec();
+    const user = await User.findById(userId).select('-password').exec();
     // Return 404 and message if user not found
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: userID ? `User with id ${userID} not found` : 'User ID required',
+        message: userId ? `User with id ${userId} not found` : 'User ID required',
       });
     }
     // Return success message with user data
@@ -25,33 +25,12 @@ export const getUserProfile = async (req, res, next) => {
   }
 };
 
-export const getCurrentUserProfile = async (req, res, next) => {
-  try {
-    const userID = req.user.userId; // Assuming userID is available in req.user
-    const user = await User.findById(userID).select('-password'); // Exclude password
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      data: { user },
-    });
-  } catch (error) {
-    return next(error);
-  }
-};
-
 export const updateUserProfile = async (req, res, next) => {
   try {
-    const { userID } = req.params;
+    const { userId } = req.params;
     const updates = req.body;
 
-    const user = await User.findByIdAndUpdate(userID, updates, { new: true }).select('-password');
+    const user = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-password');
 
     if (!user) {
       return res.status(404).json({

@@ -1,15 +1,15 @@
 import { Router } from 'express';
 import { getUserProfile } from '../controllers/UserController';
-// import { verifyToken } from '../utils/auth';
+import { verifyToken } from '../utils/auth';
 // import User from '../models/User';
 
 const router = Router();
 
 // Get current user profile
-router.get('/my-profile', getUserProfile);
+router.get('/my-profile', verifyToken, getUserProfile);
 
 // Get user profile by ID (for viewing other users' profiles)
-router.get('/:userID', getUserProfile);
+router.get('/:userId', getUserProfile);
 
 // Update current user profile
 router.put('/my-profile', async (req, res, next) => {
