@@ -1,36 +1,15 @@
 import { Router } from 'express';
+import { getUserProfile } from '../controllers/UserController';
 // import { verifyToken } from '../utils/auth';
 // import User from '../models/User';
 
 const router = Router();
 
 // Get current user profile
-router.get('/my-profile', async (req, res, next) => {
-  // Placeholder response until implemented
-  try {
-    // Create getUserProfile fn in UserController to fetch user profile data
-    return res.status(200).json({
-      success: true,
-      message: 'User profile route is under construction',
-    });
-  } catch (error) {
-    return next(error);
-  }
-});
+router.get('/my-profile', getUserProfile);
 
 // Get user profile by ID (for viewing other users' profiles)
-router.get('/:userID', async (req, res, next) => {
-  // Placeholder response until implemented
-  try {
-    // Create getUserProfile fn in UserController to fetch user profile data
-    return res.status(200).json({
-      success: true,
-      message: 'User profile route is under construction',
-    });
-  } catch (error) {
-    return next(error);
-  }
-});
+router.get('/:userID', getUserProfile);
 
 // Update current user profile
 router.put('/my-profile', async (req, res, next) => {
