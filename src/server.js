@@ -11,14 +11,14 @@ import { validateEnv } from './config/envCheck';
 import { databaseConnector } from './config/database';
 import errorHandler from './utils/errorHandler';
 import {
-  FriendshipController,
-  LeaderboardController,
-  ListController,
-  MovieController,
-  RatingController,
-  UserController,
-} from './controllers/index';
-import auth from './routes/index';
+  AuthRouter,
+  FriendshipRouter,
+  LeaderboardRouter,
+  ListsRouter,
+  MoviesRouter,
+  RatingsRouter,
+  UsersRouter,
+} from './routes/index';
 
 dotenv.config(); // Make .env data available for use
 validateEnv(); // Check all necessary variables are present in the .env file
@@ -57,18 +57,18 @@ const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 3000;
 
 // Attach routes to the app
-app.use('/friendships', FriendshipController);
-app.use('/leaderboard', LeaderboardController);
-app.use('/lists', ListController);
-app.use('/movies', MovieController);
-app.use('/ratings', RatingController);
-app.use('/users', UserController);
-app.use('/auth', auth);
+app.use('/auth', AuthRouter);
+app.use('/friendships', FriendshipRouter);
+app.use('/leaderboard', LeaderboardRouter);
+app.use('/lists', ListsRouter);
+app.use('/movies', MoviesRouter);
+app.use('/ratings', RatingsRouter);
+app.use('/users', UsersRouter);
 
 /* Connect to database, using different DBs depending on environment
 (test uses mongodb-memory-server, handled in test setup) */
 const URImap = {
-  development: 'mongodb://localhost:27017/movie_db',
+  development: process.env.LOCAL_DB_URI || 'mongodb://localhost:27017/movie_db',
   production: process.env.DATABASE_URI,
 };
 // Default to development if NODE_ENV not set correctly

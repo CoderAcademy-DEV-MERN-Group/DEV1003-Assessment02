@@ -1,9 +1,9 @@
 import request from 'supertest';
-import mongoose from 'mongoose';
-import express from 'express';
+// import mongoose from 'mongoose';
+// import express from 'express';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
 import { app } from '../../server';
-import User from '../../models/User';
+// import User from '../../models/User';
 import { userFixture } from '../setup/fixtures';
 import { clearTestDb, setupTestDb, teardownTestDb } from '../setup/testDb';
 
