@@ -99,4 +99,49 @@ describe('Movie Routes', () => {
       expect(response.body.message).toBe('Title search parameter required');
     });
   });
+
+  describe('POST /movies/', () => {
+    it('should create a new movie when authenticated', async () => {
+      const movieData = movieFixture();
+
+      const response = (await request(app).post('/movies/'))
+        .set(authHeader)
+        .send(movieData)
+        .expect(201);
+
+      expect(response.body).toMatchObject({
+        success: true,
+        message: 'Movie created successfully',
+        movie: {
+          title: movieData.title,
+          imdbId: movieData.imdbId,
+        },
+      });
+    });
+
+    it('should fail to create movie when not authenticated', async () => {
+      const movieData = movieFixture();
+
+      const response = await request(app).post('/movies/').send(movieData).expect(401);
+
+      expect(response.body).toMatchObject({
+        message: 'Access denied. No token provided.',
+      });
+    });
+
+    it('should fail to create movie with duplicate imdbId', async () => {
+      const existingMovie = await Movie.create(movieFixture());
+      const duplicateMovieData = movieFixture({ imdbId: existingMovie.imdbId });
+
+      const response = await request(app)
+        .post('/movies/')
+        .set(authHeader)
+        .send(duplicateMovieData)
+        .expect(400);
+
+      expect(response.body).toMatchObject({
+        success: false,
+      });
+    });
+  });
 });
