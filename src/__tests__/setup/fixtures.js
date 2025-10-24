@@ -12,8 +12,18 @@ export const userFixture = (overrides = {}) => ({
   ...overrides,
 });
 
+// Since most movie data is not covered by default faker functions, I have used random
+// and lorem methods, so I can test routes which get multiples.
 export const movieFixture = (overrides = {}) => ({
-  // Fill this out after creating movie model
+  title: faker.lorem.words(3),
+  year: faker.number.int({ min: 1920, max: 2023 }).toString(),
+  director: faker.person.fullName(),
+  genre: [faker.word.adjective(), faker.word.adjective()],
+  plot: faker.lorem.sentences(1).substring(0, 200),
+  actors: Array.from({ length: 3 }, () => faker.person.fullName()),
+  imdbId: `tt${faker.number.int({ min: 1000000, max: 9999999 })}`,
+  poster: faker.image.url(),
+  isReelCanon: true,
   ...overrides,
 });
 

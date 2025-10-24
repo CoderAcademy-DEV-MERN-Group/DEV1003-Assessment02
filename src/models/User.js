@@ -27,7 +27,7 @@ const reelProgressSchema = new Schema(
 );
 
 // Compound index ensures no reelProgress entries can be duplicated
-reelProgressSchema.index({ user: 1, movie: 1 }, { unique: true });
+reelProgressSchema.index({ user: 1, movie: 1 }, { unique: true, sparse: true });
 
 const userSchema = new Schema({
   username: {
