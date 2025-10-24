@@ -1,7 +1,7 @@
-import { request } from 'http';
+import validator from 'validator';
 import Movie from '../models/Movie';
-import { response } from 'express';
 
+// READ controllers
 // GET reelCanon movies
 export const getReelCanon = async (request, response, next) => {
   try {
@@ -9,6 +9,30 @@ export const getReelCanon = async (request, response, next) => {
     const movies = await Movie.find({ isReelCanon: true });
     return response.json(movies);
     // Pass errors to the error handler
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// GET movie by id
+export const getMovie = async (request, response, next) => {
+  try {
+    const { imdbId } = request.params;
+
+    const movie = await Movie.findOne({ imdbId });
+
+    if (!movie) {
+      return response.status(404).json({
+        success: false,
+        message: 'Movie not found',
+      });
+    }
+
+    return response.status(200).json({
+      success: true,
+      message: 'Movie found',
+      movie,
+    });
   } catch (error) {
     return next(error);
   }
@@ -62,8 +86,10 @@ export const searchMovie = async (request, response, next) => {
 // CREATE movie - front end can fetch API data from OMDb, supplies it to this function directly
 export const createMovie = async (request, response, next) => {
   try {
+    // Parse body for movie data
     const movieData = request.body;
 
+    // Create the movie
     const movie = await Movie.create(movieData);
 
     return response.status(201).json({
@@ -71,16 +97,80 @@ export const createMovie = async (request, response, next) => {
       message: 'Movie created successfully',
       movie,
     });
+    // Pass any errors to the error handler
   } catch (error) {
     return next(error);
   }
 };
 
 // UPDATE movie (only poster url)
-// export const updateMovieUrl = async (request, response, next) => {
-//     try {
-//         const { imdbId } = request.params
-//     }
-// }
+export const updateMoviePosterUrl = async (request, response, next) => {
+  try {
+    // Get the imdbId from the route paramaters (this is an admin function, admins should be using unique imdbId)
+    const { imdbId } = request.params;
+    // Get the poster url from the body (also ensures all other body content is ignored)
+    const { poster } = request.body;
 
-// DELETE move (flag for isReelCanon checked)
+    // Uses the isUrl validator -- as of 24/10/2025 this has moderate security vulnerabilities,
+    // but as admins are only users able to access route, no malicious activity is expected
+    if (!validator.isURL(poster)) {
+      return response.status(400).json({
+        success: false,
+        message: 'Invalid URL format for poster',
+      });
+    }
+
+    // Find and update the movie document that matches the imdbId,
+    // new: true ensures the new movie document is returned in the response
+    const movie = await Movie.findOneAndUpdate({ imdbId }, { $set: { poster } }, { new: true });
+
+    // return the new movie object
+    return response.status(200).json({
+      success: true,
+      message: 'Movie poster updated successfully',
+      movie,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// DELETE movie (flag for isReelCanon checked)
+export const deleteMovie = async (request, response, next) => {
+  try {
+    // Uses the unique imdbId from the request parameters
+    const { imdbId } = request.params;
+
+    // Finds the matching movie document
+    const movie = await Movie.findOne({ imdbId });
+
+    // If no movie is found:
+    if (!movie) {
+      return response.status(404).json({
+        success: false,
+        message: 'Movie not found',
+      });
+    }
+
+    // If the movie is in the Reel Canon:
+    // NOTE: the schema level pre hook still saves from direct deleteOne requests made to the database
+    // This is a second layer of protection for the canon
+    if (movie.isReelCanon) {
+      return response.status(403).json({
+        success: false,
+        message: 'Reel Canon movies cannot be deleted',
+      });
+    }
+
+    // find the movie and delete if it passes all requirements
+    await Movie.findOneAndDelete({ imdbId });
+
+    return response.status(200).json({
+      success: true,
+      message: 'Movie deleted successfully',
+    });
+    // Pass any errors to the error handler
+  } catch (error) {
+    return next(error);
+  }
+};
