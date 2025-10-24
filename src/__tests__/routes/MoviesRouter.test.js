@@ -104,7 +104,8 @@ describe('Movie Routes', () => {
     it('should create a new movie when authenticated', async () => {
       const movieData = movieFixture();
 
-      const response = (await request(app).post('/movies/'))
+      const response = await request(app)
+        .post('/movies/')
         .set(authHeader)
         .send(movieData)
         .expect(201);
@@ -137,10 +138,57 @@ describe('Movie Routes', () => {
         .post('/movies/')
         .set(authHeader)
         .send(duplicateMovieData)
-        .expect(400);
+        .expect(409);
 
       expect(response.body).toMatchObject({
         success: false,
+      });
+    });
+  });
+
+  describe('DELETE /movies/:imdbId', () => {
+    it('should delete a movie whe not Reel Canon', async () => {
+      const movie = await Movie.create(movieFixture({ isReelCanon: false }));
+
+      const response = await request(app)
+        .delete(`/movies/${movie.imdbId}`)
+        .set(authHeader)
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        success: true,
+        message: 'Movie deleted successfully',
+      });
+
+      // Verify movie is actually deleted:
+      const deletedMovie = await Movie.findOne({ imdbId: movie.imdbId });
+      expect(deletedMovie).toBeNull();
+    });
+
+    it('should fail to delete Reel Canon movie', async () => {
+      const movie = await Movie.create(movieFixture());
+
+      const response = await request(app)
+        .delete(`/movies/${movie.imdbId}`)
+        .set(authHeader)
+        .expect(403);
+
+      expect(response.body).toMatchObject({
+        success: false,
+        message: 'Reel Canon movies cannot be deleted',
+      });
+
+      // Verify movie still exists
+      const existingMovie = await Movie.findOne({ imdbId: movie.imdbId });
+      expect(existingMovie).not.toBeNull();
+    });
+
+    it('should fail to delete non-existent movie', async () => {
+      const response = await request(app).delete('/movies/tt9999999').set(authHeader).expect(404);
+
+      expect(response.body).toMatchObject({
+        success: false,
+        message: 'Movie not found',
       });
     });
   });
