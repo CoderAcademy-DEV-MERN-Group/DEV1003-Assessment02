@@ -14,10 +14,8 @@ const validateUserRegistration = async (request, response, next) => {
 
     if (existingUser) {
       return response.status(409).json({
-        error:
-          existingUser.email === request.body.email
-            ? 'Email or username already exists'
-            : 'Email or username already exists',
+        success: false,
+        message: 'Email or username already exists',
       });
     }
 
@@ -33,7 +31,8 @@ const validateLogin = (request, response, next) => {
   // IF there is no email or password provided
   if (!email || !password) {
     return response.status(400).json({
-      error: 'Email and password are required',
+      success: false,
+      message: 'Email and password are required',
     });
   }
 
