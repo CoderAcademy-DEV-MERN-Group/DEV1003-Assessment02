@@ -46,6 +46,10 @@ const movieSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    isReelCanon: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
