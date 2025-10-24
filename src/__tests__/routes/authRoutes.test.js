@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
 import { app } from '../../server';
-// import User from '../../models/User';
+import User from '../../models/User';
 import { userFixture } from '../setup/fixtures';
 import { clearTestDb, setupTestDb, teardownTestDb } from '../setup/testDb';
 
