@@ -94,5 +94,47 @@ describe('Auth Routes', () => {
         },
       });
     });
+
+    it('should reject invalid password with ambiguous error', async () => {
+      const userData = userFixture();
+      await User.create(userData);
+
+      const response = await request(app)
+        .post('/auth/login')
+        .send({
+          email: userData.email,
+          password: 'wrongpassword',
+        })
+        .expect(401);
+
+      expect(response.body).toEqual({
+        success: false,
+        message: 'Authentication failed',
+        errors: ['Incorrect email or password'],
+      });
+    });
+
+    it('should reject non-existent email with ambiguous error', async () => {
+      const response = await request(app)
+        .post('/auth/login')
+        .send({
+          email: 'nonexistent@example.com',
+          password: 'anypassword',
+        })
+        .expect(401);
+
+      expect(response.body.errors).toContain('Incorrect email or password');
+    });
+  });
+
+  describe('POST /auth/logout', () => {
+    it('should return success response', async () => {
+      const response = await request(app).post('/auth/logout').expect(200);
+
+      expect(response.body).toEqual({
+        success: true,
+        message: 'Log out successful',
+      });
+    });
   });
 });
