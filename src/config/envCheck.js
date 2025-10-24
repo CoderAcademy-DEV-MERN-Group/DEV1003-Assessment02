@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 export const validateEnv = () => {
   // CRITICAL application env variables, the app will not run without these
   const required = ['JWT_SECRET_KEY', 'TOKEN_HEADER_KEY', 'DATABASE_URI'];
@@ -16,7 +17,7 @@ export const validateEnv = () => {
 
   // IF anything important is in the missing array, warn in the console, but continue running the server
   if (missingImportant.length > 0 && process.env.NODE_ENV !== 'production') {
-    console.warn(' DEVELOPMENT: Missing imporant environment variables');
+    console.warn(' DEVELOPMENT: Missing important environment variables');
     missingImportant.forEach((env) => console.warn(`  - ${env} (some features disabled)`)); // Tells us which variables are missing and the impact, but app will run
   }
 
