@@ -1,33 +1,56 @@
 import { Router } from 'express';
+import { getUserProfile } from '../controllers/UserController';
 // import { verifyToken } from '../utils/auth';
 // import User from '../models/User';
 
 const router = Router();
 
-/*
-// pass verifyToken as middleware here, this will validate the token 
-router.get('/me', verifyToken, async (request, response, next) => {
+// Get current user profile
+router.get('/my-profile', getUserProfile);
+
+// Get user profile by ID (for viewing other users' profiles)
+router.get('/:userID', getUserProfile);
+
+// Update current user profile
+router.put('/my-profile', async (req, res, next) => {
+  // Placeholder response until implemented
   try {
-
-    // Request user is added by payload in verifyToken
-    const user = await User.findById(request.user.userId).select('-password'); // never shows the password directly
-
-    // IF there's no matching user:
-    if (!user) {
-      return response.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    // IF the user exists: 
-    return response.status(200).json({
+    // Create updateUserProfile fn in UserController to update user profile data
+    return res.status(200).json({
       success: true,
-      data: { user }, // send whole user object (except password, which is excluded above)
+      message: 'User profile route is under construction',
     });
   } catch (error) {
     return next(error);
   }
 });
-*/
+
+// Update current user password
+router.put('/my-profile/update-password', async (req, res, next) => {
+  // Placeholder response until implemented
+  try {
+    // Create updateUserPassword fn in UserController to update user password
+    return res.status(200).json({
+      success: true,
+      message: 'User profile route is under construction',
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// Delete current user profile
+router.delete('/my-profile', async (req, res, next) => {
+  // Placeholder response until implemented
+  try {
+    // Create deleteUserProfile fn in UserController to delete user profile data
+    return res.status(200).json({
+      success: true,
+      message: 'User profile route is under construction',
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 export default router;
