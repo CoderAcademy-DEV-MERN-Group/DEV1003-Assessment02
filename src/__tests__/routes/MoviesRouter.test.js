@@ -4,9 +4,12 @@ import { clearTestDb, setupTestDb, teardownTestDb } from '../setup/testDb';
 import { movieFixture } from '../setup/fixtures';
 import { app } from '../../server';
 import Movie from '../../models/Movie';
-import getAuthToken from '../setup/authHelper';
+import { authenticatedRequest } from '../setup/authHelper';
 
 describe('Movie Routes', () => {
+  // set up the empty authHeader variable
+  let authHeader;
+
   beforeAll(async () => {
     await setupTestDb();
   });
@@ -15,8 +18,11 @@ describe('Movie Routes', () => {
     await teardownTestDb();
   });
 
+  // before each request, set the authHeader variable using the authenticatedRequest helper function
+  // Check the authHelper file for full functionality and usage details
   beforeEach(async () => {
     await clearTestDb();
+    authHeader = await authenticatedRequest();
   });
 
   describe('GET /movies/reel-canon', () => {
@@ -39,16 +45,58 @@ describe('Movie Routes', () => {
   });
 
   describe('GET /movies/search?query', () => {
-    it('should get a movie matching the search query', async () => {
+    it('should return a single movie matching the search query if title is unique', async () => {
       const movie = await Movie.create(movieFixture());
-      const token = await getAuthToken();
 
       const response = await request(app)
         .get(`/movies/search?title=${movie.title}`)
-        .set('Authorization', `Bearer ${token}`)
+        .set(authHeader) // This is where the authHelper functions are implemented
         .expect(200);
 
       expect(response.body.movie.title).toBe(movie.title);
+    });
+
+    it('should return an array of movies if title is not unique', async () => {
+      const movie = await Movie.create(movieFixture({ title: 'sametitle' }));
+      await Movie.create(movieFixture({ title: 'sametitle' }));
+
+      const response = await request(app)
+        .get(`/movies/search?title=${movie.title}`)
+        .set(authHeader)
+        .expect(200);
+
+      expect(response.body.movies.length).toBe(2);
+      expect(response.body.movies[0].title).toStrictEqual(response.body.movies[1].title);
+    });
+
+    it('should fail if the user is not logged in', async () => {
+      const movie = await Movie.create(movieFixture());
+
+      const response = await request(app).get(`/movies/search?title=${movie.title}`).expect(401);
+
+      expect(response.body.message).toBe('Access denied. No token provided.');
+    });
+
+    it('should fail if the movie does not exist', async () => {
+      await Movie.create(movieFixture());
+
+      const response = await request(app)
+        .get('/movies/search?title=wrongtitle')
+        .set(authHeader)
+        .expect(400);
+
+      expect(response.body.message).toBe('Movie not found');
+    });
+
+    it('should fail if the query is not title', async () => {
+      const movie = await Movie.create(movieFixture());
+
+      const response = await request(app)
+        .get(`/movies/search?someotherquery=${movie.title}`)
+        .set(authHeader)
+        .expect(400);
+
+      expect(response.body.message).toBe('Title search parameter required');
     });
   });
 });

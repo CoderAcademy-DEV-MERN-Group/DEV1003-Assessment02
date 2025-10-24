@@ -40,7 +40,7 @@ export const getMovie = async (request, response, next) => {
 
 // GET search movies
 export const searchMovie = async (request, response, next) => {
-  // Search by either title or imdbId ()
+  // Search by title for better UX
   try {
     const { title } = request.query;
 
