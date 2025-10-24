@@ -17,3 +17,16 @@ export const authenticatedRequest = async () => {
   const token = await getAuthToken();
   return { Authorization: `Bearer ${token}` };
 };
+
+// For admin requests:
+export const getAdminToken = async () => {
+  const adminUser = await User.create(userFixture({ username: 'adminuser', isAdmin: true }));
+  const token = generateToken(adminUser);
+  return token;
+};
+
+// for admin requests loaded in the header:
+export const adminRequest = async () => {
+  const token = await getAdminToken();
+  return { Authorization: `Bearer ${token}` };
+};

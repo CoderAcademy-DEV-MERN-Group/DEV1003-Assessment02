@@ -4,11 +4,12 @@ import { clearTestDb, setupTestDb, teardownTestDb } from '../setup/testDb';
 import { movieFixture } from '../setup/fixtures';
 import { app } from '../../server';
 import Movie from '../../models/Movie';
-import { authenticatedRequest } from '../setup/authHelper';
+import { adminRequest, authenticatedRequest } from '../setup/authHelper';
 
 describe('Movie Routes', () => {
   // set up the empty authHeader variable
   let authHeader;
+  let adminHeader;
 
   beforeAll(async () => {
     await setupTestDb();
@@ -23,6 +24,7 @@ describe('Movie Routes', () => {
   beforeEach(async () => {
     await clearTestDb();
     authHeader = await authenticatedRequest();
+    adminHeader = await adminRequest();
   });
 
   describe('GET /movies/reel-canon', () => {
@@ -146,6 +148,54 @@ describe('Movie Routes', () => {
     });
   });
 
+  describe('PATCH /movies/:imdbId', () => {
+    it('should update a movie poster when admin', async () => {
+      const movie = await Movie.create(movieFixture());
+      const newPoster = 'https://example.com/new-poster.jpg';
+
+      const response = await request(app)
+        .patch(`/movies/${movie.imdbId}`)
+        .set(adminHeader)
+        .send({ poster: newPoster })
+        .expect(200);
+
+      expect(response.body).toMatchObject({
+        success: true,
+        message: 'Movie poster updated successfully',
+        movie: {
+          poster: newPoster,
+        },
+      });
+    });
+
+    it('should fail to update poster with invalid URL', async () => {
+      const movie = await Movie.create(movieFixture());
+
+      const response = await request(app)
+        .patch(`/movies/${movie.imdbId}`)
+        .set(adminHeader)
+        .send({ poster: 'notvalidurl-.com' })
+        .expect(400);
+
+      expect(response.body).toMatchObject({
+        success: false,
+        message: 'Invalid URL format for poster',
+      });
+    });
+
+    it('should fail to update a nonexistent movie', async () => {
+      const response = await request(app)
+        .patch(`/movies/tt00000000`)
+        .set(adminHeader)
+        .send({ poster: 'https://example.com/poster.jpg' })
+        .expect(404);
+
+      expect(response.body).toMatchObject({
+        success: false,
+        message: 'Movie not found',
+      });
+    });
+  });
   describe('DELETE /movies/:imdbId', () => {
     it('should delete a movie whe not Reel Canon', async () => {
       const movie = await Movie.create(movieFixture({ isReelCanon: false }));

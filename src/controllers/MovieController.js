@@ -124,6 +124,13 @@ export const updateMoviePosterUrl = async (request, response, next) => {
     // new: true ensures the new movie document is returned in the response
     const movie = await Movie.findOneAndUpdate({ imdbId }, { $set: { poster } }, { new: true });
 
+    // Check the movie exists
+    if (!movie) {
+      return response.status(404).json({
+        success: false,
+        message: 'Movie not found',
+      });
+    }
     // return the new movie object
     return response.status(200).json({
       success: true,
