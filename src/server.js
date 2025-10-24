@@ -70,6 +70,7 @@ app.use('/auth', auth);
 const URImap = {
   development: 'mongodb://localhost:27017/movie_db',
   production: process.env.DATABASE_URI,
+  test: 'mongodb://localhost:27017/movie_db_test',
 };
 // Default to development if NODE_ENV not set correctly
 const databaseURL = URImap[process.env.NODE_ENV] || URImap.development;

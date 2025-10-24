@@ -1,6 +1,4 @@
 import request from 'supertest';
-import mongoose from 'mongoose';
-import express from 'express';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
 import { app } from '../../server';
 import User from '../../models/User';
@@ -38,6 +36,14 @@ describe('Auth Routes', () => {
       expect(response.body.user.isAdmin).toBeUndefined();
     });
 
+    it('should register user as admin when isAdmin is true', async () => {
+      const adminData = userFixture({ isAdmin: true });
+
+      const response = await request(app).post('/auth/register').send(adminData).expect(201);
+
+      expect(response.body.user.isAdmin).toBe(true);
+    });
+
     it('should reject duplicate email', async () => {
       const existingUser = await User.create(userFixture());
       const newUser = userFixture({
@@ -70,14 +76,23 @@ describe('Auth Routes', () => {
       const userData = userFixture();
       await User.create(userData);
 
-      const response = (await request(app).post('/auth/login'))
+      const response = await request(app)
+        .post('/auth/login')
         .send({
           email: userData.email,
           password: userData.password,
         })
         .expect(200);
 
-      expect(response.body).toMatch
+      expect(response.body).toMatchObject({
+        success: true,
+        message: 'Login successful!',
+        token: expect.any(String),
+        user: {
+          username: userData.username,
+          email: userData.email,
+        },
+      });
     });
   });
 });
