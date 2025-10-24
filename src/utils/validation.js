@@ -15,10 +15,7 @@ const validateUserRegistration = async (request, response, next) => {
     if (existingUser) {
       return response.status(409).json({
         success: false,
-        message:
-          existingUser.email === request.body.email
-            ? 'Email or username already exists'
-            : 'Email or username already exists',
+        message: 'Email or username already exists',
       });
     }
 

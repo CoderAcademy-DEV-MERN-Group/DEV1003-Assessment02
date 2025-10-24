@@ -44,7 +44,7 @@ describe('Auth Routes', () => {
       expect(response.body.user.isAdmin).toBe(true);
     });
 
-    it('should reject duplicate email', async () => {
+    it('should reject duplicate email with ambiguous message', async () => {
       const existingUser = await User.create(userFixture());
       const newUser = userFixture({
         username: 'differentusername',
@@ -57,7 +57,7 @@ describe('Auth Routes', () => {
       expect(response.body.message).toMatch('Email or username already exists');
     });
 
-    it('should reject duplicate username', async () => {
+    it('should reject duplicate username with ambiguous message', async () => {
       const existingUser = await User.create(userFixture());
       const newUser = userFixture({
         username: existingUser.username,
@@ -124,6 +124,39 @@ describe('Auth Routes', () => {
         .expect(401);
 
       expect(response.body.errors).toContain('Incorrect email or password');
+    });
+
+    it('should reject login with missing email', async () => {
+      const response = await request(app)
+        .post('/auth/login')
+        .send({ password: 'Password123!' })
+        .expect(400);
+
+      expect(response.body).toEqual({
+        success: false,
+        message: 'Email and password are required',
+      });
+    });
+
+    it('should reject login with missing password', async () => {
+      const response = await request(app)
+        .post('/auth/login')
+        .send({ email: 'email@example.com' })
+        .expect(400);
+
+      expect(response.body).toEqual({
+        success: false,
+        message: 'Email and password are required',
+      });
+    });
+
+    it('should reject login with both required fields missing', async () => {
+      const response = await request(app).post('/auth/login').send({}).expect(400);
+
+      expect(response.body).toEqual({
+        success: false,
+        message: 'Email and password are required',
+      });
     });
   });
 
