@@ -122,6 +122,26 @@ describe('Movie Routes', () => {
       });
     });
 
+    it('should always create movie with isReelCanon false', async () => {
+      const movieData = movieFixture({ isReelCanon: true }); // Try to set as Reel Canon
+
+      const response = await request(app)
+        .post('/movies/')
+        .set(authHeader)
+        .send(movieData)
+        .expect(201);
+
+      expect(response.body).toMatchObject({
+        success: true,
+        message: 'Movie created successfully',
+        movie: {
+          title: movieData.title,
+          imdbId: movieData.imdbId,
+          isReelCanon: false, // Should be forced to false
+        },
+      });
+    });
+
     it('should fail to create movie when not authenticated', async () => {
       const movieData = movieFixture();
 

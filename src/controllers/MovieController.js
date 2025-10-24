@@ -89,8 +89,14 @@ export const createMovie = async (request, response, next) => {
     // Parse body for movie data
     const movieData = request.body;
 
+    // Force isReelCanon to false for user-created movies
+    const sanitizedData = {
+      ...movieData,
+      isReelCanon: false, // Override any value from request
+    };
+
     // Create the movie
-    const movie = await Movie.create(movieData);
+    const movie = await Movie.create(sanitizedData);
 
     return response.status(201).json({
       success: true,
