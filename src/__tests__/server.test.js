@@ -126,7 +126,16 @@ describe('Middleware is configured correctly', () => {
 
 // Tests to check database-dump route works for dev and test but not prod
 describe('Database dump route works for dev & test, not prod', () => {
-  // Tests are default test environment settings
+  // Turn off console.log for these tests to reduce clutter
+  let consoleSpy;
+  beforeAll(() => {
+    consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  });
+  afterAll(() => {
+    consoleSpy.mockRestore();
+  });
+
+  // Test in test environment
   it('should return 200 and data object in test environment', async () => {
     const res = await request(app).get('/database-dump');
     expect(res.statusCode).toBe(200);
