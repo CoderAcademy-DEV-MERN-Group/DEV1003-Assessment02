@@ -73,3 +73,51 @@ describe('GET /users/:userID endpoint works correctly', () => {
     });
   });
 });
+
+describe('GET /users/my-profile endpoint works correctly', () => {
+  it('should successfully get the current user profile when authenticated', async () => {
+    const userData = userFixture();
+    const createdUser = await User.create(userData);
+    // Get JWT token from body of login response
+    const { token } = (
+      await request(app)
+        .post('/auth/login')
+        .send({ email: userData.email, password: userData.password })
+    ).body;
+    // Attach token to header with .set method
+    const res = await request(app).get('/users/my-profile').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      success: true,
+      data: {
+        user: {
+          _id: createdUser.id,
+          username: userData.username,
+          email: userData.email,
+          isAdmin: false,
+          reelProgress: [],
+        },
+      },
+    });
+  });
+
+  it('should return 401 and message if no token', async () => {
+    const res = await request(app).get('/users/my-profile');
+    expect(res.status).toBe(401);
+    expect(res.body).toMatchObject({
+      success: false,
+      message: 'Access denied. No token provided.',
+    });
+  });
+
+  it('should return 400 and message if invalid token', async () => {
+    const res = await request(app)
+      .get('/users/my-profile')
+      .set('Authorization', 'Bearer invalidtoken123');
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({
+      success: false,
+      message: 'Invalid token',
+    });
+  });
+});
