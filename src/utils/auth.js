@@ -49,4 +49,14 @@ const verifyToken = (request, response, next) => {
   }
 };
 
-export { generateToken, verifyToken };
+const requireAdmin = (request, response, next) => {
+  if (!request.user.isAdmin) {
+    return response.status(403).json({
+      success: false,
+      message: 'Admin access required',
+    });
+  }
+  return next();
+};
+
+export { generateToken, verifyToken, requireAdmin };
