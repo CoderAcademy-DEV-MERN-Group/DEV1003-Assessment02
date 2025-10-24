@@ -13,8 +13,8 @@ dotenv.config();
 const API_KEY = process.env.OMDB_API_KEY;
 
 // Database environment variable detection for deployment vs local development
-const MONGODB_URI =
-  process.env.NODE_ENV === 'production' ? process.env.MONGODB_URI : process.env.LOCAL_DB_URI;
+const DATABASE_URI =
+  process.env.NODE_ENV === 'production' ? process.env.DATABASE_URI : process.env.LOCAL_DB_URI;
 
 const moviesList = JSON.parse(readFileSync('./src/database/movies.json', 'utf8'));
 
@@ -50,7 +50,15 @@ async function seedDatabase() {
       } database...`,
     );
 
-    await mongoose.connect(MONGODB_URI);
+    try {
+      await mongoose.connect(DATABASE_URI, {
+        serverSelectionTimeoutMS: 5000, // Times out after 5 seconds if can't establish connection
+      });
+    } catch (error) {
+      console.error('Database connection failed: ', error);
+      process.exit(1);
+    }
+
     console.log('Connected to MongoDB!');
 
     await Movie.deleteMany({});

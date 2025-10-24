@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import { validateEnv } from './config/envCheck';
 import { databaseConnector } from './config/database';
 import defaultErrorHandler from './utils/errorHandler';
 import {
@@ -17,8 +18,10 @@ import {
   RatingController,
   UserController,
 } from './controllers/index';
+import auth from './routes/index';
 
 dotenv.config(); // Make .env data available for use
+validateEnv(); // Check all necessary variables are present in the .env file
 const app = express(); // Create the Express app object
 
 // Configure middleware
@@ -60,6 +63,7 @@ app.use('/lists', ListController);
 app.use('/movies', MovieController);
 app.use('/ratings', RatingController);
 app.use('/users', UserController);
+app.use('/auth', auth);
 
 /* Connect to database, using different DBs depending on environment
 (test uses mongodb-memory-server, handled in test setup) */
