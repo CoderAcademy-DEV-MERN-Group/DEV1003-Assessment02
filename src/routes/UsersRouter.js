@@ -1,5 +1,9 @@
 import { Router } from 'express';
-import { getUserProfile, updateUserProfile } from '../controllers/UserController';
+import {
+  getUserProfile,
+  updateUserProfile,
+  updateUserPassword,
+} from '../controllers/UserController';
 import { verifyToken } from '../utils/auth';
 // import User from '../models/User';
 
@@ -15,21 +19,13 @@ router.get('/:userId', getUserProfile);
 router.put('/my-profile', verifyToken, updateUserProfile);
 
 // Update another user's profile (admin only - with userId param)
-router.put('/my-profile/:userId', verifyToken, updateUserProfile);
+router.put('/:userId', verifyToken, updateUserProfile);
 
 // Update current user password
-router.put('/my-profile/update-password', async (req, res, next) => {
-  // Placeholder response until implemented
-  try {
-    // Create updateUserPassword fn in UserController to update user password
-    return res.status(200).json({
-      success: true,
-      message: 'User profile route is under construction',
-    });
-  } catch (error) {
-    return next(error);
-  }
-});
+router.put('/my-profile/update-password', verifyToken, updateUserPassword);
+
+// Update another user's password (admin only - with userId param)
+router.put('/:userId/update-password', verifyToken, updateUserPassword);
 
 // Delete current user profile
 router.delete('/my-profile', async (req, res, next) => {

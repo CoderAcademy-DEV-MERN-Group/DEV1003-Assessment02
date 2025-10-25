@@ -1,5 +1,7 @@
+import bcrypt from 'bcrypt';
 import User from '../models/User';
 
+// const allowAdminOrUser =
 // Get user profile by ID or user object attached to request
 export const getUserProfile = async (req, res, next) => {
   try {
@@ -58,6 +60,47 @@ export const updateUserProfile = async (req, res, next) => {
     return next(error);
   }
 };
+
+export const updateUserPassword = async (req, res, next) => {
+  try {
+    // Return 403 if non-admin user tries to update another user's password
+    if (req.params.userId && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins can update other user passwords',
+      });
+    }
+    // User ID will be from params if provided (already checked admin above), else from token
+    const userId = req.params.userId || req.user?.userId;
+    const user = await User.findById(userId).exec();
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+    // For non-admins, verify current password before allowing update
+    if (!req.user.isAdmin) {
+      const validPassword = await bcrypt.compare(req.body.currentPassword, user.password);
+      if (!validPassword) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid current password',
+        });
+      }
+    }
+    // Update password and save
+    user.password = req.body.newPassword;
+    await user.save({ validateBeforeSave: true }); // Ensure validators run on save
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully',
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 /*
 // pass verifyToken as middleware here, this will validate the token 
 router.get('/me', verifyToken, async (request, response, next) => {
