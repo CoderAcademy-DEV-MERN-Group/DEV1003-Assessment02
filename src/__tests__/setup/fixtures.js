@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import request from 'supertest';
 
 const { username, email } = faker.internet;
 
@@ -11,6 +12,15 @@ export const userFixture = (overrides = {}) => ({
   isAdmin: false,
   ...overrides,
 });
+// Helper function for user fixture to generate an auth token from login route
+export const getAuthToken = async (app, userData) => {
+  const { token } = (
+    await request(app)
+      .post('/auth/login')
+      .send({ email: userData.email, password: userData.password })
+  ).body;
+  return token;
+};
 
 export const movieFixture = (overrides = {}) => ({
   // Fill this out after creating movie model

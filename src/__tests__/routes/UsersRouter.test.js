@@ -13,7 +13,7 @@ import request from 'supertest';
 import { app } from '../../server';
 import { setupTestDb, clearTestDb, teardownTestDb } from '../setup/testDb';
 import User from '../../models/User';
-import { userFixture } from '../setup/fixtures';
+import { userFixture, getAuthToken } from '../setup/fixtures';
 
 let consoleSpy;
 
@@ -80,12 +80,7 @@ describe('GET /users/my-profile endpoint works correctly', () => {
   it('should successfully get the current user profile when authenticated', async () => {
     const userData = userFixture();
     const createdUser = await User.create(userData);
-    // Get JWT token from body of login response
-    const { token } = (
-      await request(app)
-        .post('/auth/login')
-        .send({ email: userData.email, password: userData.password })
-    ).body;
+    const token = await getAuthToken(app, userData);
     // Attach token to header with .set method
     const res = await request(app).get('/users/my-profile').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(200);
@@ -124,18 +119,13 @@ describe('GET /users/my-profile endpoint works correctly', () => {
   });
 });
 
-// Test endpoint for updating user profile works for both user and admin
+// Test endpoint for updating user profile for current user works correctly
 describe('PUT /users/my-profile endpoint works correctly', () => {
   // Test for successful profile update
   it('should successfully update the current user profile when authenticated', async () => {
     const userData = userFixture();
     const user = await User.create(userData);
-    // Call login route to get JWT token
-    const { token } = (
-      await request(app)
-        .post('/auth/login')
-        .send({ email: userData.email, password: userData.password })
-    ).body;
+    const token = await getAuthToken(app, userData);
     const updatedData = { username: 'random-name', email: 'random-email@example.com' };
     // Call put request with updated data
     const res = await request(app)
@@ -154,31 +144,6 @@ describe('PUT /users/my-profile endpoint works correctly', () => {
       },
     });
   });
-  // Test update works for admin updating someone else's profile
-  it('should allow admin to update different user profile', async () => {
-    // Create admin user and set isAdmin to true
-    const adminData = userFixture({ isAdmin: true });
-    await User.create(adminData);
-    // Create other user to be updated
-    const otherUser = await User.create(userFixture());
-    // Login as admin to get token
-    const { token } = (
-      await request(app)
-        .post('/auth/login')
-        .send({ email: adminData.email, password: adminData.password })
-    ).body;
-    const updatedData = { username: 'random-name' };
-    // Call put request to update other user's profile using userId param
-    const res = await request(app)
-      .put(`/users/my-profile/${otherUser.id}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send(updatedData);
-    expect(res.status).toBe(200);
-    expect(res.body.data.user).toMatchObject({
-      _id: otherUser.id,
-      username: updatedData.username,
-    });
-  });
   // Test for no token provided, should trigger 'verifyToken' middleware
   it('should return 401 and message if no token', async () => {
     const res = await request(app).put('/users/my-profile').send({ username: 'newname' });
@@ -188,25 +153,122 @@ describe('PUT /users/my-profile endpoint works correctly', () => {
       message: 'Access denied. No token provided.',
     });
   });
+});
+
+// Test endpoint for updating user profile for admin updating another user works correctly
+describe('PUT /users/:userId endpoint works correctly', () => {
+  // Test update works for admin updating someone else's profile
+  it('should allow admin to update different user profile', async () => {
+    // Create admin user and set isAdmin to true
+    const adminData = userFixture({ isAdmin: true });
+    await User.create(adminData);
+    // Create other user to be updated
+    const otherUser = await User.create(userFixture());
+    // Login as admin to get token
+    const token = await getAuthToken(app, adminData);
+    const updatedData = { username: 'random-name' };
+    // Call put request to update other user's profile using userId param
+    const res = await request(app)
+      .put(`/users/${otherUser.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(updatedData);
+    expect(res.status).toBe(200);
+    expect(res.body.data.user).toMatchObject({
+      _id: otherUser.id,
+      username: updatedData.username,
+    });
+  });
   // Test for non admin trying to update another user's profile
   it("should return 403 and message if non-admin tries to update another user's profile", async () => {
     const userData = userFixture();
     await User.create(userData);
     const otherUser = await User.create(userFixture());
     // Login as non-admin user to get token
-    const { token } = (
-      await request(app)
-        .post('/auth/login')
-        .send({ email: userData.email, password: userData.password })
-    ).body;
+    const token = await getAuthToken(app, userData);
     const res = await request(app)
-      .put(`/users/my-profile/${otherUser.id}`)
+      .put(`/users/${otherUser.id}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ username: 'newname' });
     expect(res.status).toBe(403);
     expect(res.body).toMatchObject({
       success: false,
       message: 'Only admins can update other users than themselves',
+    });
+  });
+});
+
+// Test endpoint for updating user password works for both user and admin
+describe('PUT /users/my-profile/update-password endpoint works correctly', () => {
+  // Test for successful password update
+  it('should successfully update the current user password when authenticated', async () => {
+    const userData = userFixture();
+    await User.create(userData);
+    const token = await getAuthToken(app, userData);
+    const newPasswordData = { currentPassword: userData.password, newPassword: 'Newpassword1!' };
+    // Call put request with new password data
+    const res = await request(app)
+      .put('/users/my-profile/update-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newPasswordData);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      success: true,
+      message: 'Password updated successfully',
+    });
+  });
+  // Test for admin successfully updating another user's password
+  it("should allow admin to update another user's password", async () => {
+    // Create admin user and set isAdmin to true
+    const adminData = userFixture({ isAdmin: true });
+    await User.create(adminData);
+    // Create other user to be updated
+    const otherUser = await User.create(userFixture());
+    // Login as admin to get token
+    const token = await getAuthToken(app, adminData);
+    const newPasswordData = { newPassword: 'Newpassword1!' };
+    // Call put request using userId param and update password
+    const res = await request(app)
+      .put(`/users/${otherUser.id}/update-password`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(newPasswordData);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      success: true,
+      message: 'Password updated successfully',
+    });
+  });
+  // Test that invalid password rejects update
+  it('should return 401 and message if current password is incorrect', async () => {
+    const userData = userFixture();
+    await User.create(userData);
+    const token = await getAuthToken(app, userData);
+    const newPasswordData = { currentPassword: 'Wrongpassword1!', newPassword: 'Newpassword1!' };
+    // Call put request with new password data
+    const res = await request(app)
+      .put('/users/my-profile/update-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newPasswordData);
+    expect(res.status).toBe(401);
+    expect(res.body).toMatchObject({
+      success: false,
+      message: 'Invalid current password',
+    });
+  });
+  // Test it returns error message for invalid new password
+  it('should return 400 and message if new password does not meet criteria', async () => {
+    const userData = userFixture();
+    await User.create(userData);
+    const token = await getAuthToken(app, userData);
+    const newPasswordData = { currentPassword: userData.password, newPassword: 'short' };
+    // Call put request with new password data
+    const res = await request(app)
+      .put('/users/my-profile/update-password')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newPasswordData);
+    expect(res.status).toBe(400);
+    expect(res.body).toMatchObject({
+      success: false,
+      message: 'Schema validation failed',
     });
   });
 });
