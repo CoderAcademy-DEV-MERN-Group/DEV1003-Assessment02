@@ -25,12 +25,23 @@ export const getUserProfile = async (req, res, next) => {
   }
 };
 
+// Update user profile by ID or optional userId param for admins only
 export const updateUserProfile = async (req, res, next) => {
   try {
-    const { userId } = req.params;
-    const updates = req.body;
-
-    const user = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-password');
+    // Return 403 if non-admin user tries to update another user's profile
+    if (req.params.userId && !req.user.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only admins can update other users than themselves',
+      });
+    }
+    // User ID will be from params if provided (already checked admin above), else from token
+    const userId = req.params.userId || req.user?.userId;
+    // findByIdAndUpdate only updates provided fields, { new: true } returns updated document
+    // runValidators: true ensures Mongoose schema validators are run on update
+    const user = await User.findByIdAndUpdate(userId, req.body, { new: true, runValidators: true })
+      .select('-password') // Prevent password update and exclude from response
+      .exec();
 
     if (!user) {
       return res.status(404).json({
