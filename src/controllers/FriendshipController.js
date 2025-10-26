@@ -1,28 +1,24 @@
-// import Friendship from '../models/Friendship';
-// import User from '../models/User';
+import mongoose from 'mongoose';
+import Friendship from '../models/Friendship.js';
+import User from '../models/User.js';
+import { verifyToken } from '../utils/auth.js';
 
-// Controller for sending friend request
-// Route = POST /friends/request
+// get authenticated user's ID from request (auth middleware)
+// const getAuthenticatedUserId = (request) => {
+//     return request.user.id;
+// };
 
-// export async function sendFriendRequest(request, respond) {
+// // Create a friend request
+// export const createFriendRequest = async (request, respond, next) => {
 //     try {
-//         const { requesterUserId, recipientUserId } = request.body;
+// const requesterUserId = request.user.id;
 
-//         // Check if user exist
+// Accept a friend request
 
-//         // if user B does not exist, return invalid user error
+// Reject a friend request
 
-//         // If both users exist, create friendship request
+// Remove an existing friendship (unfriend)
 
-//         // Validate the existing status of friendship between both users
+// Get the incoming pending friend requests for the authenticated logged in user
 
-// }
-
-// Controller to respond to a friend request to accept or reject
-// Route = POST /friends/respond
-
-// Controller to get friendship status
-// Route =GET /friends/status
-
-// Controller to get list of friends
-// Route = GET /friends/list/:userId
+// Get list of friends for the authenticated logged in user
