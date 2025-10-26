@@ -11,29 +11,35 @@ import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
-const friendshipSchema = new Schema({
-  requesterUserId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
+const friendshipSchema = new Schema(
+  {
+    requesterUserId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    recipientUserId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    isAccepted: {
+      type: Boolean,
+      default: false,
+    },
   },
-  recipientUserId: {
-    type: Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  isAccepted: {
-    type: Boolean,
-    default: false,
-  },
+  // Removed enum option for simplicity, can be expanded later
   // friendRequestStatus: {
   //   type: String,
   //   enum: ['pending', 'accepted', 'rejected'],
   //   default: 'pending',
   // },
-});
+  {
+    timestamps: true,
+  },
+);
 
-// prevent duplicate friend requests between same two users
+// added unique index to prevent duplicate friendship requests between the same users
 friendshipSchema.index(
   {
     requesterUserId: 1,
@@ -41,5 +47,9 @@ friendshipSchema.index(
   },
   { unique: true },
 );
+
+// added index to help with querying a user's friendships (for requester and recipient)
+friendshipSchema.index({ requesterUserId: 1 });
+friendshipSchema.index({ recipientUserId: 1 });
 
 export default mongoose.model('Friendship', friendshipSchema);
