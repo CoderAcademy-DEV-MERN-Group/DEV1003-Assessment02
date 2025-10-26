@@ -1,21 +1,18 @@
+/* eslint-disable consistent-return */
 import bcrypt from 'bcrypt';
 import User from '../models/User';
+// import Friendship from '../models/Friendship';
+import { checkAdminOrUser, getUserOr404 } from '../utils/userHelperFunctions';
 
-// const allowAdminOrUser =
 // Get user profile by ID or user object attached to request
 export const getUserProfile = async (req, res, next) => {
   try {
     // If userId in params, use it, else use req.user.userId, if req.user not there is undefined
     const userId = req.params.userId || req.user?.userId;
-    // select with '-' excludes field, exec forces true promise for consistency
-    const user = await User.findById(userId).select('-password').exec();
-    // Return 404 and message if user not found
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: userId ? `User with id ${userId} not found` : 'User ID required',
-      });
-    }
+    // Fetch user or return 404 if not found
+    const user = await getUserOr404(userId, res);
+    // If user not found, getUserOr404 already sent 404 response, so exit early
+    if (!user) return;
     // Return success message with user data
     return res.status(200).json({
       success: true,
@@ -30,15 +27,10 @@ export const getUserProfile = async (req, res, next) => {
 // Update user profile by ID or optional userId param for admins only
 export const updateUserProfile = async (req, res, next) => {
   try {
-    // Return 403 if non-admin user tries to update another user's profile
-    if (req.params.userId && !req.user.isAdmin) {
-      return res.status(403).json({
-        success: false,
-        message: 'Only admins can update other users than themselves',
-      });
-    }
-    // User ID will be from params if provided (already checked admin above), else from token
-    const userId = req.params.userId || req.user?.userId;
+    // Check if admin or user updating profile
+    const { authorized, userId } = checkAdminOrUser(req, res, 'update other user profiles');
+    // checkAdminOrUser already sent 403 response if not authorized, so exit early
+    if (!authorized) return;
     // findByIdAndUpdate only updates provided fields, { new: true } returns updated document
     // runValidators: true ensures Mongoose schema validators are run on update
     const user = await User.findByIdAndUpdate(userId, req.body, { new: true, runValidators: true })
@@ -61,17 +53,13 @@ export const updateUserProfile = async (req, res, next) => {
   }
 };
 
+// Update user password by ID or optional userId param for admins only
 export const updateUserPassword = async (req, res, next) => {
   try {
-    // Return 403 if non-admin user tries to update another user's password
-    if (req.params.userId && !req.user.isAdmin) {
-      return res.status(403).json({
-        success: false,
-        message: 'Only admins can update other user passwords',
-      });
-    }
-    // User ID will be from params if provided (already checked admin above), else from token
-    const userId = req.params.userId || req.user?.userId;
+    // Check if admin or user updating profile
+    const { authorized, userId } = checkAdminOrUser(req, res, 'update other user passwords');
+    // checkAdminOrUser already sent 403 response if not authorized, so exit early
+    if (!authorized) return;
     const user = await User.findById(userId).exec();
     if (!user) {
       return res.status(404).json({
@@ -101,29 +89,25 @@ export const updateUserPassword = async (req, res, next) => {
   }
 };
 
-/*
-// pass verifyToken as middleware here, this will validate the token 
-router.get('/me', verifyToken, async (request, response, next) => {
+// Delete user profile by ID or optional userId param for admins only
+export const deleteUserProfile = async (req, res, next) => {
   try {
-
-    // Request user is added by payload in verifyToken
-    const user = await User.findById(request.user.userId).select('-password'); // never shows the password directly
-
-    // IF there's no matching user:
-    if (!user) {
-      return response.status(404).json({
-        success: false,
-        message: 'User not found',
-      });
-    }
-
-    // IF the user exists: 
-    return response.status(200).json({
+    // Check if admin or user updating profile
+    const { authorized, userId } = checkAdminOrUser(req, res, 'delete other user profiles');
+    // checkAdminOrUser already sent 403 response if not authorized, so exit early
+    if (!authorized) return;
+    // Fetch user or return 404 if not found
+    const user = await getUserOr404(userId, res);
+    // If user not found, getUserOr404 already sent 404 response, so exit early
+    if (!user) return;
+    // Implement logic here to handle deleting associated friendships (and any other related data)
+    // await Friendship.deleteMany({}).exec();
+    await User.findByIdAndDelete(userId).exec();
+    return res.status(200).json({
       success: true,
-      data: { user }, // send whole user object (except password, which is excluded above)
+      message: 'User profile deleted successfully',
     });
   } catch (error) {
     return next(error);
   }
-});
-*/
+};

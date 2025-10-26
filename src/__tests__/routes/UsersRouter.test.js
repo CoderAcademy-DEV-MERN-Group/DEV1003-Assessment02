@@ -192,7 +192,7 @@ describe('PUT /users/:userId endpoint works correctly', () => {
     expect(res.status).toBe(403);
     expect(res.body).toMatchObject({
       success: false,
-      message: 'Only admins can update other users than themselves',
+      message: 'Only admins can update other user profiles',
     });
   });
 });
@@ -269,6 +269,66 @@ describe('PUT /users/my-profile/update-password endpoint works correctly', () =>
     expect(res.body).toMatchObject({
       success: false,
       message: 'Schema validation failed',
+    });
+  });
+});
+
+// Test endpoint for deleting user profile works correctly
+describe('DELETE /users/my-profile endpoint works correctly', () => {
+  // Test for successful profile deletion
+  it('should successfully delete the current user profile when authenticated', async () => {
+    const userData = userFixture();
+    const user = await User.create(userData);
+    const token = await getAuthToken(app, userData);
+    // Call delete request
+    const res = await request(app)
+      .delete('/users/my-profile')
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      success: true,
+      message: 'User profile deleted successfully',
+    });
+    // Verify user is actually deleted from DB
+    const deletedUser = await User.findById(user.id).exec();
+    expect(deletedUser).toBeNull();
+  });
+  // Test for admin deletion route
+  it('should allow admin to delete another user profile', async () => {
+    // Create admin user
+    const adminData = userFixture({ isAdmin: true });
+    await User.create(adminData);
+    // Create other user to be deleted
+    const otherUser = await User.create(userFixture());
+    // Login as admin to get token
+    const token = await getAuthToken(app, adminData);
+    // Call delete request to delete other user's profile using userId param
+    const res = await request(app)
+      .delete(`/users/${otherUser.id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      success: true,
+      message: 'User profile deleted successfully',
+    });
+    // Verify other user is actually deleted from DB
+    const deletedUser = await User.findById(otherUser.id).exec();
+    expect(deletedUser).toBeNull();
+  });
+  // Test for non admin trying to delete another user's profile
+  it("should return 403 and message if non-admin tries to delete another user's profile", async () => {
+    const userData = userFixture();
+    await User.create(userData);
+    const otherUser = await User.create(userFixture());
+    // Login as non-admin user to get token
+    const token = await getAuthToken(app, userData);
+    const res = await request(app)
+      .delete(`/users/${otherUser.id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(403);
+    expect(res.body).toMatchObject({
+      success: false,
+      message: 'Only admins can delete other user profiles',
     });
   });
 });

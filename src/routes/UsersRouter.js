@@ -3,6 +3,7 @@ import {
   getUserProfile,
   updateUserProfile,
   updateUserPassword,
+  deleteUserProfile,
 } from '../controllers/UserController';
 import { verifyToken } from '../utils/auth';
 // import User from '../models/User';
@@ -28,17 +29,9 @@ router.put('/my-profile/update-password', verifyToken, updateUserPassword);
 router.put('/:userId/update-password', verifyToken, updateUserPassword);
 
 // Delete current user profile
-router.delete('/my-profile', async (req, res, next) => {
-  // Placeholder response until implemented
-  try {
-    // Create deleteUserProfile fn in UserController to delete user profile data
-    return res.status(200).json({
-      success: true,
-      message: 'User profile route is under construction',
-    });
-  } catch (error) {
-    return next(error);
-  }
-});
+router.delete('/my-profile', verifyToken, deleteUserProfile);
+
+// Delete another user's profile (admin only - with userId param)
+router.delete('/:userId', verifyToken, deleteUserProfile);
 
 export default router;
