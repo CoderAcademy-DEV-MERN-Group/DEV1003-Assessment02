@@ -1,4 +1,6 @@
+import mongoose from 'mongoose';
 import User from '../models/User';
+import Friendship from '../models/Friendship';
 
 // Validation middleware for all user registering, validation for login can happen in route (more basic, instantaneous response)
 const validateUserRegistration = async (request, response, next) => {
@@ -25,10 +27,11 @@ const validateUserRegistration = async (request, response, next) => {
   }
 };
 
+// Validation for login requests
 const validateLogin = (request, response, next) => {
   const { email, password } = request.body;
 
-  // IF there is no email or password provided
+  // IF there is no email or password provided, return 400 error
   if (!email || !password) {
     return response.status(400).json({
       success: false,
@@ -39,51 +42,72 @@ const validateLogin = (request, response, next) => {
   return next();
 };
 
-// // Validation for friend request existence and duplicates
-// const validateFriendRequest = async (req, res, next) => {
-//   try {
-//     // support either requester/recipient naming or user1/user2
-//     const requester = req.body.requesterUserId || req.body.user1;
-//     const recipient = req.body.recipientUserId || req.body.user2;
+// Validation for friend request
+// Expects requester user to be the authenticated user after logged in with verified token
+const validateFriendRequest = async (request, response, next) => {
+  try {
+    // Derive RequesterUserId from the auth middleware (must be run before this)
+    const RequesterUserId = request.user?.id; // || request.body.user1;
+    // Determine RecipientUserId from the request body
+    const RecipientUserId = request.body.recipientUserId; // || request.body.user2;
 
-//     // ensures both userIds are provided
-//     if (!requester || !recipient) {
-//       return next(new InvalidUserIdError());
-//     }
+    // Checks to ensure both friendRequester and friendRecipient userIds are provided
+    if (!RequesterUserId || !RecipientUserId) {
+      return response.status(400).json({
+        success: false,
+        message: 'Both requester and recipient user IDs are required',
+      });
+    }
 
-//     // ensure valid ObjectIds
-//     if (!mongoose.isValidObjectId(requester) || !mongoose.isValidObjectId(recipient)) {
-//       return next(new InvalidUserIdError());
-//     }
+    // Checks to ensure both user Ids are valid ObjectId strings
+    if (!mongoose.isValidObjectId(RequesterUserId) || !mongoose.isValidObjectId(RecipientUserId)) {
+      return response.status(400).json({
+        success: false,
+        message: 'One of both provided user IDs are invalid',
+      });
+    }
 
-//     // prevent user from requesting friendship with themselves
-//     if (requester.toString() === recipient.toString()) {
-//       return next(new SelfFriendError());
-//     }
+    // Prevent user from requesting friendship with themselves
+    if (RequesterUserId.toString() === RecipientUserId.toString()) {
+      return response.status(400).json({
+        success: false,
+        message: 'Cannot send a friend request to yourself',
+      });
+    }
 
-//     // ensure users exist
-//     const [rUser, rcptUser] = await Promise.all([
-//       User.findById(requester),
-//       User.findById(recipient),
-//     ]);
+    // Check if both users exists
+    const [requesterUser, recipientUser] = await Promise.all([
+      User.findById(RequesterUserId),
+      User.findById(RecipientUserId),
+    ]);
+    if (!requesterUser || !recipientUser) {
+      return response.status(400).json({
+        success: false,
+        message: 'One or both user IDs provided do not exist',
+      });
+    }
 
-//     if (!rUser || !rcptUser) {
-//       return next(new InvalidUserIdError());
-//     }
+    // Duplicate check: reuse friendship Model static methods to find unordered pair
+    // Friendship.findBetween returns a document if a friendship record exists (isAccepted or pending)
+    const friendship = await Friendship.findBetween(requesterUser, recipientUser);
+    if (friendship) {
+      // If a friendship record exists, check if it's already accepted
+      if (friendship.friendRequestAccepted) {
+        return response.status(409).json({
+          success: false,
+          message: 'Friendship already exists between these users',
+        });
+      }
+      return response.status(409).json({
+        success: false,
+        message: 'A pending friend request already exists between these users',
+      });
+    }
 
-//     // normalise order to check existing friendship
-//     const [a, b] = [requester.toString(), recipient.toString()].sort();
-//     const existing = await Friendship.findOne({ user1: a, user2: b });
-//     if (existing) {
-//       const err = new Error('Friendship already exists between these users');
-//       err.statusCode = 409;
-//       return next(err);
-//     }
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+};
 
-//     return next();
-//   } catch (error) {
-//     return next(error);
-//   }
-// };
-
-export { validateUserRegistration, validateLogin };
+export { validateUserRegistration, validateLogin, validateFriendRequest };
