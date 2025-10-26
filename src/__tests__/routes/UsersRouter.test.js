@@ -53,6 +53,18 @@ describe('GET /users endpoint works correctly', () => {
     });
     expect(res.body.data.users.length).toBe(6); // 5 created + 1 admin
   });
+  // Test that non admin cannot access endpoint
+  it('should return 403 and message if non-admin tries to access', async () => {
+    const userData = userFixture();
+    await User.create(userData);
+    const token = await getAuthToken(app, userData);
+    const res = await request(app).get('/users').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(403);
+    expect(res.body).toMatchObject({
+      success: false,
+      message: 'Admin access required',
+    });
+  });
 });
 
 // Test admin endpoint for getting user by url params works correctly
