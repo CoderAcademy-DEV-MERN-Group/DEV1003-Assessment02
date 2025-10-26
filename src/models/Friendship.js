@@ -3,6 +3,7 @@
 // friendship collection between two users, when user A sends a friend request and userB accepts
 
 import mongoose from 'mongoose';
+import { InvalidUserIdError, SelfFriendError } from '../utils/customErrors.js';
 
 const { Schema } = mongoose;
 
@@ -40,38 +41,47 @@ const friendshipSchema = new Schema(
   },
 );
 
-// Normalise userId order before validation so the unique index checks for both inverted combinations
-friendshipSchema.pre('validate', function (next) {
-  // If either userId is invalid, skip to next validation
-  if (!this.user1 || !this.user2) return next();
+/*
+Pre validations for friend requests before saving to the database
+  - Checks both userIds are both valid user ObjectIds
+  - Checks that userIds are not the same to prevent user from friending themselves
+  - Normalises the order of userIds so that (User1, User2) is equivalent to (User2, User1)
+*/
+friendshipSchema.pre('validate', function ValidateFriendRequests(next) {
+  // If either user ObjectId are invalid, skip the rest of the validation
+  if (!this.user1 || !this.user2) {
+    return next(new InvalidUserIdError());
+  }
 
+  // Convert the user ObjectIds to Strings to use for sorting order/comparison
   const user1Id = this.user1.toString();
   const user2Id = this.user2.toString();
 
   // Invalidates if both userIds are the same to prevent user from self-friending themselves
   if (user1Id === user2Id) {
     this.invalidate('user2Id', 'A user cannot friend request themselves.');
-    next();
+    return next(new SelfFriendError());
   }
 
-  // Sort the order of the userId pairs (so that User1 and User 2 === User2 and User1)
+  // Sort the order of the userId pairs
   if (user1Id > user2Id) {
     [this.user1, this.user2] = [this.user2, this.user1];
   }
   return next();
 });
 
-// enforce uniqueness for the unordered pair (to prevent duplicate friend requests between same set of users)
+// Unique index for both user Ids to enforce uniqueness of friendships between two users
 friendshipSchema.index(
   {
-    user1Id: 1,
-    user2Id: 1,
+    user1: 1,
+    user2: 1,
   },
   { unique: true },
 );
 
-// added index to help with querying a user's friendships (for requester and recipient)
+// To help with query indexes to find friendship by user1, user2 and requesterUserId
+friendshipSchema.index({ user1: 1 });
+friendshipSchema.index({ user2: 1 });
 friendshipSchema.index({ requesterUserId: 1 });
-friendshipSchema.index({ recipientUserId: 1 });
 
 export default mongoose.model('Friendship', friendshipSchema);
