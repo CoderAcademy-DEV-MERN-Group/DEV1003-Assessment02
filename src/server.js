@@ -7,18 +7,21 @@ import helmet from 'helmet';
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import { validateEnv } from './config/envCheck';
 import { databaseConnector } from './config/database';
-import defaultErrorHandler from './utils/errorHandler';
+import errorHandler from './utils/errorHandler';
 import {
-  FriendshipController,
-  LeaderboardController,
-  ListController,
-  MovieController,
-  RatingController,
-  UserController,
-} from './controllers/index';
+  AuthRouter,
+  FriendshipRouter,
+  LeaderboardRouter,
+  ListsRouter,
+  MoviesRouter,
+  RatingsRouter,
+  UsersRouter,
+} from './routes/index';
 
 dotenv.config(); // Make .env data available for use
+validateEnv(); // Check all necessary variables are present in the .env file
 const app = express(); // Create the Express app object
 
 // Configure middleware
@@ -40,7 +43,7 @@ app.use(
 // Configure CORS settings (allows cross-origin requests from frontend)
 app.use(
   cors({
-    // Replace with deployed frontend URL when applicable
+    // Replace with deployed frontend URL when applicable and update test in server.test.js
     origin: ['http://localhost:5000', 'https://deployedApp.com'],
     optionsSuccessStatus: 200,
   }),
@@ -54,17 +57,18 @@ const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 3000;
 
 // Attach routes to the app
-app.use('/friendships', FriendshipController);
-app.use('/leaderboard', LeaderboardController);
-app.use('/lists', ListController);
-app.use('/movies', MovieController);
-app.use('/ratings', RatingController);
-app.use('/users', UserController);
+app.use('/auth', AuthRouter);
+app.use('/friendships', FriendshipRouter);
+app.use('/leaderboard', LeaderboardRouter);
+app.use('/lists', ListsRouter);
+app.use('/movies', MoviesRouter);
+app.use('/ratings', RatingsRouter);
+app.use('/users', UsersRouter);
 
 /* Connect to database, using different DBs depending on environment
 (test uses mongodb-memory-server, handled in test setup) */
 const URImap = {
-  development: 'mongodb://localhost:27017/movie_db',
+  development: process.env.LOCAL_DB_URI || 'mongodb://localhost:27017/movie_db',
   production: process.env.DATABASE_URI,
 };
 // Default to development if NODE_ENV not set correctly
@@ -109,6 +113,10 @@ app.get('/database-health', (req, res) => {
 app.get('/', (req, res) => {
   res.json({ message: 'Hello World!' });
 });
+// Add post route to echo sent data
+app.post('/echo', (req, res) => {
+  res.json({ receivedData: req.body });
+});
 
 /* Route to dump all database data (will only be available in development and test environments)
 DO NOT USE IN PRODUCTION - EXPOSES ALL DATA TO CLIENT!!! */
@@ -141,9 +149,7 @@ if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
 
 // Error-handling middleware (should be last)
 // Logs full error on server, sends generic message to client for security
-// Implement specific error handling above this later for better client messages
-// eslint-disable-next-line no-unused-vars
-app.use(defaultErrorHandler);
+app.use(errorHandler);
 
 // Keep 404 route at the bottom, should only trigger if no proceeding route was matched
 app.all(/.*/, (req, res) => {

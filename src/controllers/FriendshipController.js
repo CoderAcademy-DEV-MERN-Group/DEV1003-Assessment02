@@ -1,9 +1,3 @@
-import { Router } from 'express';
-
-const router = Router();
-
-export default router;
-
 // import Friendship from '../models/Friendship';
 // import User from '../models/User';
 
