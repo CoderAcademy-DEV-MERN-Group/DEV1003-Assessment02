@@ -4,7 +4,7 @@
 const errorHandler = (err, req, res, next) => {
   // Log full error on server for debugging, don't expose potentially sensitive info to client
   // eslint-disable-next-line no-console
-  console.error('The following error occured:', {
+  console.error('The following error occurred:', {
     name: err.name,
     code: err.code,
     message: err.message,
