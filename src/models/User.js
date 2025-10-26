@@ -20,14 +20,18 @@ const reelProgressSchema = new Schema(
       max: 5,
       default: null,
     },
+    isWatched: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-// Compound index ensures no reelProgress entries can be duplicated
-reelProgressSchema.index({ user: 1, movie: 1 }, { unique: true, sparse: true });
+// // Compound index ensures no reelProgress entries can be duplicated
+// reelProgressSchema.index({ user: 1, movie: 1 }, { unique: true, sparse: true });
 
 const userSchema = new Schema({
   username: {

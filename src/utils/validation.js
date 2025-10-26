@@ -39,4 +39,24 @@ const validateLogin = (request, response, next) => {
   return next();
 };
 
-export { validateUserRegistration, validateLogin };
+// Validates all post requests for ReelProgress records, otherwise extra
+// or incorrect data will be silently removed
+const validateReelProgress = (request, response, next) => {
+  // Set up allowed fields to protect subdocument from extra data
+  const allowedFields = ['movie', 'rating', 'isWatched'];
+  // Gets the fields which were extra so they can be passed back to the user
+  const extraFields = Object.keys(request.body).filter((field) => !allowedFields.includes(field));
+
+  // Checks if there were any extra fields in the request body
+  if (extraFields.length > 0) {
+    return response.status(400).json({
+      success: false,
+      message: `Unexpected field(s) in reelProgress: ${extraFields.join(', ')}}`,
+      expectedFields: allowedFields,
+    });
+  }
+
+  return next();
+};
+
+export { validateUserRegistration, validateLogin, validateReelProgress };

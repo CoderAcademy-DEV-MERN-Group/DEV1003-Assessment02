@@ -5,6 +5,7 @@ import ListsRouter from './ListsRouter';
 import MoviesRouter from './MoviesRouter';
 import RatingsRouter from './RatingsRouter';
 import UsersRouter from './UsersRouter';
+import ReelProgressRouter from './ReelProgressRouter';
 
 export {
   AuthRouter,
@@ -14,4 +15,5 @@ export {
   MoviesRouter,
   RatingsRouter,
   UsersRouter,
+  ReelProgressRouter,
 };
