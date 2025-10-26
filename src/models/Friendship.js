@@ -1,11 +1,8 @@
-// friendships will be the most basic version of friendships we can do successfully
-
 // friendship collection between two users, when user A sends a friend request and userB accepts
+// Stores friendships ordered by smallest id first to simplify queries
 
-import mongoose from 'mongoose';
-import { InvalidUserIdError, SelfFriendError } from '../utils/customErrors.js';
-
-const { Schema } = mongoose;
+// Use object destructuring to access mongoose Schema property/method directly
+import mongoose, { Schema } from 'mongoose';
 
 const friendshipSchema = new Schema(
   {
@@ -25,7 +22,8 @@ const friendshipSchema = new Schema(
       ref: 'User',
       required: true,
     },
-    isAccepted: {
+    // Indicates if the friend request has been accepted
+    friendRequestAccepted: {
       type: Boolean,
       default: false,
     },
@@ -37,51 +35,51 @@ const friendshipSchema = new Schema(
   //   default: 'pending',
   // },
   {
-    timestamps: true,
+    timestamps: true, // Creates and updates createdAt and updatedAt fields
   },
 );
 
 /*
-Pre validations for friend requests before saving to the database
-  - Checks both userIds are both valid user ObjectIds
-  - Checks that userIds are not the same to prevent user from friending themselves
-  - Normalises the order of userIds so that (User1, User2) is equivalent to (User2, User1)
+Composite unique index:
+  - to help with querying and
+  - to enforce uniqueness to prevent duplicate friendship records
 */
-friendshipSchema.pre('validate', function ValidateFriendRequests(next) {
-  // If either user ObjectId are invalid, skip the rest of the validation
-  if (!this.user1 || !this.user2) {
-    return next(new InvalidUserIdError());
-  }
+friendshipSchema.index({ user1: 1, user2: 1 }, { unique: true });
 
-  // Convert the user ObjectIds to Strings to use for sorting order/comparison
-  const user1Id = this.user1.toString();
-  const user2Id = this.user2.toString();
-
-  // Invalidates if both userIds are the same to prevent user from self-friending themselves
-  if (user1Id === user2Id) {
-    this.invalidate('user2Id', 'A user cannot friend request themselves.');
-    return next(new SelfFriendError());
+// Pre-validate hook: check for self-friendship
+friendshipSchema.pre('validate', function ValidateSelfFriendRequest(next) {
+  // Check if user1 is user2 objectId, trigger validation error
+  if (this.user1.equals(this.user2)) {
+    this.invalidate('user2', 'Cannot create friendship with yourself');
   }
-
-  // Sort the order of the userId pairs
-  if (user1Id > user2Id) {
-    [this.user1, this.user2] = [this.user2, this.user1];
-  }
-  return next();
+  next();
 });
 
-// Unique index for both user Ids to enforce uniqueness of friendships between two users
-friendshipSchema.index(
-  {
-    user1: 1,
-    user2: 1,
-  },
-  { unique: true },
-);
+// Pre-save hook: enforce ordering of user1 and user2 ObjectIds (by asc order)
+friendshipSchema.pre('save', function SortUserIds(next) {
+  // Convert user ObjectIds to strings for comparison (bigger > smaller)
+  if (this.user1.toString() > this.user2.toString()) {
+    // then invert the pair order of users eg. (B, A) = (A, B)
+    [this.user1, this.user2] = [this.user2, this.user1];
+  }
+  next();
+});
 
-// To help with query indexes to find friendship by user1, user2 and requesterUserId
-friendshipSchema.index({ user1: 1 });
-friendshipSchema.index({ user2: 1 });
-friendshipSchema.index({ requesterUserId: 1 });
+// Helper static method: Find friendship between two users if exists, returns Friendship document otherwise null
+friendshipSchema.statics.findBetween = function ReturnFriendshipDocument(userId1, userId2) {
+  const [user1, user2] =
+    userId1.toString() < userId2.toString() ? [userId1, userId2] : [userId2, userId1];
+  // Return the friendship document if exists between user1 and user2
+  return this.findOne({ user1, user2 });
+};
 
-export default mongoose.model('Friendship', friendshipSchema);
+// Helper static method: Check if two users are friends (accepted)
+friendshipSchema.statics.areFriends = async function CheckIfFriends(userId1, userId2) {
+  const friendship = await this.findBetween(userId1, userId2);
+  // Returns true only if friendship exists and friendRequestAccepted is true, otherwise false
+  return friendship?.friendRequestAccepted === true;
+};
+
+const Friendship = mongoose.model('Friendship', friendshipSchema);
+
+export default Friendship;
