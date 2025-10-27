@@ -40,6 +40,7 @@ describe('Friendship model schema validation works correctly', () => {
 
     expect(friendship).toBeDefined(); // Check creation succeeded
     // Check that user1 and user2 where assigned to friendship (sort to avoid order issues)
+    // eslint-disable-next-line no-underscore-dangle
     expect([friendship.user1, friendship.user2]).toEqual([user1._id, user2._id].sort());
     expect(friendship.friendRequestAccepted).toBe(true); // Check set to true correctly
     expect(friendship.createdAt).toBeDefined(); // Check timestamps created

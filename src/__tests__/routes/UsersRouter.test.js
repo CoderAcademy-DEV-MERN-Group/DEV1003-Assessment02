@@ -16,24 +16,26 @@ import User from '../../models/User';
 import { userFixture, getAuthToken } from '../setup/fixtures';
 import { authenticatedRequest, adminRequest } from '../setup/authHelper';
 
+// Empty variables to be assigned in beforeAll hooks
 let consoleSpy;
 let authHeader;
 let adminHeader;
 
 beforeAll(async () => {
-  await setupTestDb();
+  await setupTestDb(); // Set up in memory MongoDB database
+  // Mock console log and error outputs to prevent cluttering console and catch specific logs if needed
   consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 });
 
-afterAll(async () => {
-  await teardownTestDb();
-  consoleSpy.mockRestore();
+beforeEach(async () => {
+  await clearTestDb(); // Clear database before each test
+  authHeader = await authenticatedRequest(); // Get auth header for normal user
+  adminHeader = await adminRequest(); // Get auth header for admin user
 });
 
-beforeEach(async () => {
-  await clearTestDb();
-  authHeader = await authenticatedRequest();
-  adminHeader = await adminRequest();
+afterAll(async () => {
+  await teardownTestDb(); // Teardown in memory MongoDB database
+  consoleSpy.mockRestore(); // Restore console log and error after tests complete
 });
 
 // Test admin endpoint for getting all users works correctly
@@ -195,35 +197,26 @@ describe('PUT /users/my-profile endpoint works correctly', () => {
 describe('PUT /users/:userId endpoint works correctly', () => {
   // Test update works for admin updating someone else's profile
   it('should allow admin to update different user profile', async () => {
-    // Create admin user and set isAdmin to true
-    const adminData = userFixture({ isAdmin: true });
-    await User.create(adminData);
-    // Create other user to be updated
-    const otherUser = await User.create(userFixture());
-    // Login as admin to get token
-    const token = await getAuthToken(app, adminData);
+    // Create user to be updated
+    const user = await User.create(userFixture());
+    // Data to be updated
     const updatedData = { username: 'random-name' };
     // Call put request to update other user's profile using userId param
-    const res = await request(app)
-      .put(`/users/${otherUser.id}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send(updatedData);
+    const res = await request(app).put(`/users/${user.id}`).set(adminHeader).send(updatedData);
     expect(res.status).toBe(200);
     expect(res.body.data.user).toMatchObject({
-      _id: otherUser.id,
+      _id: user.id,
       username: updatedData.username,
     });
   });
   // Test for non admin trying to update another user's profile
   it("should return 403 and message if non-admin tries to update another user's profile", async () => {
-    const userData = userFixture();
-    await User.create(userData);
-    const otherUser = await User.create(userFixture());
-    // Login as non-admin user to get token
-    const token = await getAuthToken(app, userData);
+    // Created non admin user has different token to authHeader
+    const user = await User.create(userFixture());
+    // Call res and attempt to update users profile using authHeader token
     const res = await request(app)
-      .put(`/users/${otherUser.id}`)
-      .set('Authorization', `Bearer ${token}`)
+      .put(`/users/${user.id}`)
+      .set(authHeader)
       .send({ username: 'newname' });
     expect(res.status).toBe(403);
     expect(res.body).toMatchObject({
@@ -252,20 +245,15 @@ describe('PUT /users/my-profile/update-password endpoint works correctly', () =>
       message: 'Password updated successfully',
     });
   });
-  // // Test for admin successfully updating another user's password (commented out for future discussion)
+  // Test for admin successfully updating another user's password (commented out for future discussion)
   // it("should allow admin to update another user's password", async () => {
-  //   // Create admin user and set isAdmin to true
-  //   const adminData = userFixture({ isAdmin: true });
-  //   await User.create(adminData);
   //   // Create other user to be updated
   //   const otherUser = await User.create(userFixture());
-  //   // Login as admin to get token
-  //   const token = await getAuthToken(app, adminData);
   //   const newPasswordData = { newPassword: 'Newpassword1!' };
   //   // Call put request using userId param and update password
   //   const res = await request(app)
   //     .put(`/users/${otherUser.id}/update-password`)
-  //     .set('Authorization', `Bearer ${token}`)
+  //     .set(adminHeader)
   //     .send(newPasswordData);
   //   expect(res.status).toBe(200);
   //   expect(res.body).toMatchObject({
@@ -331,17 +319,10 @@ describe('DELETE /users/my-profile endpoint works correctly', () => {
   });
   // Test for admin deletion route
   it('should allow admin to delete another user profile', async () => {
-    // Create admin user
-    const adminData = userFixture({ isAdmin: true });
-    await User.create(adminData);
     // Create other user to be deleted
     const otherUser = await User.create(userFixture());
-    // Login as admin to get token
-    const token = await getAuthToken(app, adminData);
     // Call delete request to delete other user's profile using userId param
-    const res = await request(app)
-      .delete(`/users/${otherUser.id}`)
-      .set('Authorization', `Bearer ${token}`);
+    const res = await request(app).delete(`/users/${otherUser.id}`).set(adminHeader);
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
@@ -353,14 +334,9 @@ describe('DELETE /users/my-profile endpoint works correctly', () => {
   });
   // Test for non admin trying to delete another user's profile
   it("should return 403 and message if non-admin tries to delete another user's profile", async () => {
-    const userData = userFixture();
-    await User.create(userData);
     const otherUser = await User.create(userFixture());
-    // Login as non-admin user to get token
-    const token = await getAuthToken(app, userData);
-    const res = await request(app)
-      .delete(`/users/${otherUser.id}`)
-      .set('Authorization', `Bearer ${token}`);
+    // Call delete request on otherUser using different non-admin authHeader JWT token
+    const res = await request(app).delete(`/users/${otherUser.id}`).set(authHeader);
     expect(res.status).toBe(403);
     expect(res.body).toMatchObject({
       success: false,
