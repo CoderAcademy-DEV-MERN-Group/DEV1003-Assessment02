@@ -37,7 +37,10 @@ export const movieFixture = (overrides = {}) => ({
   ...overrides,
 });
 
+const user1 = userFixture();
 export const friendshipFixture = (overrides = {}) => ({
-  // Fill this out after creating movie model
+  user1: user1.id,
+  user2: userFixture().id,
+  requesterUserId: user1.id,
   ...overrides,
 });

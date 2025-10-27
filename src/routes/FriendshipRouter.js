@@ -88,4 +88,12 @@ that doesn't account for who sent the friend request
 if req.user.id === friendship.requesterUserId
 then we allow update
 otherwise reject
+
+htttp:website/someone-elses-profile/their-friends 
+ - This user has a jwt token
+ - we need to get their friends list
+ - we create a state variable called friendsList
+ - Front end calls /my-friends route with jwt token attached
+ - so the response is the friends for that user from friendships/:id route
+
 */
