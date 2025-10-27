@@ -49,8 +49,8 @@ friendshipSchema.index({ user1: 1, user2: 1 }, { unique: true });
 // Pre-validate hook: check for self-friendship
 friendshipSchema.pre('validate', function ValidateSelfFriendRequest(next) {
   // Check if user1 is user2 objectId, trigger validation error
-  if (this.user1.equals(this.user2)) {
-    this.invalidate('user2', 'Cannot create friendship with yourself');
+  if (this.user1?.equals(this.user2)) {
+    this.invalidate('user1', 'Cannot create friendship with yourself');
   }
   next();
 });
