@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test, jest } from '@jest/globals';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import User from '../../models/User';
 import { clearTestDb, setupTestDb, teardownTestDb } from '../setup/testDb';
 import { userFixture } from '../setup/fixtures';
@@ -26,7 +26,7 @@ afterAll(async () => {
 // Tests for User model schema validation
 describe('User Schema validation', () => {
   // Tests creating user with valid data works
-  test('Create user with valid data and hash password before saving', async () => {
+  it('Create user with valid data and hash password before saving', async () => {
     const userData = userFixture();
     const testUser = await User.create(userData);
     const keys = ['username', 'email', 'isAdmin'];
@@ -45,21 +45,21 @@ describe('User Schema validation', () => {
     ['no symbol', 'Abcdefg1'],
   ];
   // Create a test for each invalid password case, '%s' replaced by first element in each array
-  test.each(passwordTests)('should reject password for: %s', async (_, password) => {
+  it.each(passwordTests)('should reject password for: %s', async (_, password) => {
     const userData = userFixture({ password });
     await expect(User.create(userData)).rejects.toThrow(
       expect.objectContaining({ name: 'ValidationError' }),
     );
   });
   // Test for rejecting incorrect email format
-  test('should reject incorrect email format', async () => {
+  it('should reject incorrect email format', async () => {
     const userData = userFixture({ email: 'invalid-email' });
     await expect(User.create(userData)).rejects.toThrow(
       expect.objectContaining({ name: 'ValidationError' }),
     );
   });
   // Test for rejecting duplicate usernames
-  test('should reject duplicate username', async () => {
+  it('should reject duplicate username', async () => {
     const username = 'duplicateUser';
     const userData1 = userFixture({ username });
     const userData2 = userFixture({ username });
@@ -70,7 +70,7 @@ describe('User Schema validation', () => {
     );
   });
   // Test for rejecting duplicate emails
-  test('should reject duplicate email', async () => {
+  it('should reject duplicate email', async () => {
     const email = 'someuser@email.com';
     // Create two user fixtures with identical email
     const [userData1, userData2] = [userFixture({ email }), userFixture({ email })];

@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test, jest } from '@jest/globals';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import Friendship from '../../models/Friendship';
 import User from '../../models/User';
 import { clearTestDb, setupTestDb, teardownTestDb } from '../setup/testDb';
@@ -30,7 +30,7 @@ afterAll(async () => {
 
 // Test that built in and custom schema validations work correctly
 describe('Friendship model schema validation works correctly', () => {
-  test('should create a valid friendship instance', async () => {
+  it('should create a valid friendship instance', async () => {
     const friendship = await Friendship.create({
       user1: user1.id,
       user2: user2.id,
@@ -47,7 +47,7 @@ describe('Friendship model schema validation works correctly', () => {
     expect(friendship.updatedAt).toBeDefined();
   });
   // Test default value for friendRequestAccepted
-  test('should default friendRequestAccepted to false if not given', async () => {
+  it('should default friendRequestAccepted to false if not given', async () => {
     const friendship = await Friendship.create({
       user1: user1.id,
       user2: user2.id,
@@ -58,7 +58,7 @@ describe('Friendship model schema validation works correctly', () => {
     expect(friendship.friendRequestAccepted).toBe(false);
   });
   // Test missing fields trigger expected validation errors and messages
-  test('should trigger schema validation errors when missing required fields', async () => {
+  it('should trigger schema validation errors when missing required fields', async () => {
     // Create friendship with missing user1 and expect validation error
     await expect(Friendship.create({ user2: user2.id, requesterUserId: user2.id })).rejects.toThrow(
       expect.objectContaining({
@@ -85,7 +85,7 @@ describe('Friendship model schema validation works correctly', () => {
     );
   });
   // Test self-friendship attempt triggers expected validation error
-  test('should reject friendship with same user (user1 === user2)', async () => {
+  it('should reject friendship with same user (user1 === user2)', async () => {
     await expect(
       Friendship.create({ user1: user1.id, user2: user1.id, requesterUserId: user1.id }),
     ).rejects.toThrow(
@@ -98,7 +98,7 @@ describe('Friendship model schema validation works correctly', () => {
 });
 // Test that user IDs are automatically ordered when saved to db
 describe('Friendship Model pre save hook correctly orders user IDs', () => {
-  test('should automatically order user IDs by smallest to largest', async () => {
+  it('should automatically order user IDs by smallest to largest', async () => {
     // Create with IDs in any order
     const sortedIds = [user1.id, user2.id].sort(); // Sort ids
     const friendship = await Friendship.create({
@@ -114,7 +114,7 @@ describe('Friendship Model pre save hook correctly orders user IDs', () => {
 
 // Test that unique composite keys are enforced by db regardless of order
 describe('Friendship Model enforces unique composite keys', () => {
-  test('should reject duplicate friendship if keys are same order', async () => {
+  it('should reject duplicate friendship if keys are same order', async () => {
     await Friendship.create({ user1: user1.id, user2: user2.id, requesterUserId: user1.id });
 
     // Try to create duplicate
@@ -123,7 +123,7 @@ describe('Friendship Model enforces unique composite keys', () => {
     ).rejects.toThrow(expect.objectContaining({ name: 'MongoServerError' }));
   });
 
-  test('should reject duplicate friendship if keys are reversed', async () => {
+  it('should reject duplicate friendship if keys are reversed', async () => {
     await Friendship.create({ user1: user1.id, user2: user2.id, requesterUserId: user1.id });
 
     // Try to create reverse duplicate (should be normalized to same order)
@@ -140,7 +140,7 @@ describe('Friendship Model enforces unique composite keys', () => {
 // Tests custom findBetween static method
 describe('Friendship Model static method findBetween() should work as expected', () => {
   // Check it works to find existing friendship
-  test('should find and return friendship between two users', async () => {
+  it('should find and return friendship between two users', async () => {
     const created = await Friendship.create({
       user1: user1.id,
       user2: user2.id,
@@ -153,7 +153,7 @@ describe('Friendship Model static method findBetween() should work as expected',
     expect(found.id).toBe(created.id);
   });
   // Check it works regardless of parameter order
-  test('should find still find friendship if user order reversed', async () => {
+  it('should find still find friendship if user order reversed', async () => {
     await Friendship.create({ user1: user1.id, user2: user2.id, requesterUserId: user1.id });
     // Return document with original and reversed order as parameters
     const found1 = await Friendship.findBetween(user1.id, user2.id);
@@ -164,7 +164,7 @@ describe('Friendship Model static method findBetween() should work as expected',
     expect(found1.id).toBe(found2.id);
   });
   // Check it returns null if no friendship exists
-  test('should return null if friendship does not exist', async () => {
+  it('should return null if friendship does not exist', async () => {
     const found = await Friendship.findBetween(user1.id, user2.id);
     expect(found).toBeNull();
   });
@@ -173,12 +173,12 @@ describe('Friendship Model static method findBetween() should work as expected',
 // Tests custom areFriends static method
 describe('Friendship Model static method areFriends() works as expected', () => {
   // Check it returns false if no friendship exists
-  test('should return false if no friendship exists', async () => {
+  it('should return false if no friendship exists', async () => {
     const result = await Friendship.areFriends(user1.id, user2.id);
     expect(result).toBe(false);
   });
   // Check a pending but not accepted friendship still returns false
-  test('should return false if friendship is pending (not accepted)', async () => {
+  it('should return false if friendship is pending (not accepted)', async () => {
     await Friendship.create({
       user1: user1.id,
       user2: user2.id,
@@ -190,7 +190,7 @@ describe('Friendship Model static method areFriends() works as expected', () => 
     expect(result).toBe(false);
   });
   // Check an accepted friendship returns true
-  test('should return true for existing accepted friendship', async () => {
+  it('should return true for existing accepted friendship', async () => {
     await Friendship.create({
       user1: user1.id,
       user2: user2.id,
@@ -202,7 +202,7 @@ describe('Friendship Model static method areFriends() works as expected', () => 
     expect(result).toBe(true);
   });
   // Check it works regardless of parameter order
-  test('should return true when ids out of order', async () => {
+  it('should return true when ids out of order', async () => {
     await Friendship.create({
       user1: user1.id,
       user2: user2.id,
@@ -220,7 +220,7 @@ describe('Friendship Model static method areFriends() works as expected', () => 
 
 // Test friendship creation, update and accept, and method use together
 describe('Friendship Model integration tests', () => {
-  test('should simulate full friendship request and acceptance', async () => {
+  it('should simulate full friendship request and acceptance', async () => {
     // Create friendship request with default pending status
     const friendship = await Friendship.create({
       user1: user1.id,
