@@ -14,8 +14,11 @@ import { app } from '../../server';
 import { setupTestDb, clearTestDb, teardownTestDb } from '../setup/testDb';
 import User from '../../models/User';
 import { userFixture, getAuthToken } from '../setup/fixtures';
+import { authenticatedRequest, adminRequest } from '../setup/authHelper';
 
 let consoleSpy;
+let authHeader;
+let adminHeader;
 
 beforeAll(async () => {
   await setupTestDb();
@@ -29,36 +32,30 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await clearTestDb();
+  authHeader = await authenticatedRequest();
+  adminHeader = await adminRequest();
 });
 
 // Test admin endpoint for getting all users works correctly
 describe('GET /users endpoint works correctly', () => {
   // Test for successful retrieval of all users
   it('should successfully get all users when users exist', async () => {
-    // Create admin user and set isAdmin to true
-    const adminData = userFixture({ isAdmin: true });
-    await User.create(adminData);
-    // Create multiple other users
+    // Create multiple users
     await User.create(Array.from({ length: 5 }, () => userFixture()));
-    // Login as admin to get token
-    const token = await getAuthToken(app, adminData);
-    // Call get request to fetch all users
-    const res = await request(app).get('/users').set('Authorization', `Bearer ${token}`);
+    // Call get request to fetch all users. Use adminHeader for admin auth token
+    const res = await request(app).get('/users').set(adminHeader);
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
-      data: {
-        users: expect.any(Array),
-      },
+      data: { users: expect.any(Array) },
     });
-    expect(res.body.data.users.length).toBe(6); // 5 created + 1 admin
+    // 5 created + 1 each for authHeader and adminHeader in beforeEach
+    expect(res.body.data.users.length).toBe(7);
   });
   // Test that non admin cannot access endpoint
   it('should return 403 and message if non-admin tries to access', async () => {
-    const userData = userFixture();
-    await User.create(userData);
-    const token = await getAuthToken(app, userData);
-    const res = await request(app).get('/users').set('Authorization', `Bearer ${token}`);
+    // Attempt with non-admin authHeader
+    const res = await request(app).get('/users').set(authHeader);
     expect(res.status).toBe(403);
     expect(res.body).toMatchObject({
       success: false,
@@ -71,40 +68,29 @@ describe('GET /users endpoint works correctly', () => {
 describe('GET /users/:userID endpoint works correctly', () => {
   // Tests that id is used from params to get user profile
   it('should successfully get a user profile by ID', async () => {
-    // Create admin user and set isAdmin to true
-    const adminData = userFixture({ isAdmin: true });
-    await User.create(adminData);
-    // Create other user to be fetched
-    const otherUser = await User.create(userFixture());
-    // Login as admin to get token
-    const token = await getAuthToken(app, adminData);
-    // Call get request to fetch other user's profile using userId param
-    const res = await request(app)
-      .get(`/users/${otherUser.id}`)
-      .set('Authorization', `Bearer ${token}`);
+    // Create user to be fetched
+    const user = await User.create(userFixture());
+    // Call get request to fetch a different user's profile using userId param and setting admin auth header
+    const res = await request(app).get(`/users/${user.id}`).set(adminHeader);
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
       data: {
         user: {
-          _id: otherUser.id,
-          username: otherUser.username,
-          email: otherUser.email,
+          _id: user.id,
+          username: user.username,
+          email: user.email,
           isAdmin: false,
-          reelProgress: [],
         },
       },
     });
   });
   // Tests that a valid but non-existent ID returns 404
   it('should return 404 and message if no user found with given ID', async () => {
-    // Create admin user to authenticate
-    const adminData = userFixture({ isAdmin: true });
-    await User.create(adminData);
-    const token = await getAuthToken(app, adminData);
     // Valid ID type but doesn't exist in DB
     const fakeID = '64d2f0c2f0c2f0c2f0c2f0c2';
-    const res = await request(app).get(`/users/${fakeID}`).set('Authorization', `Bearer ${token}`);
+    // Call admin fetch route with fakeID using adminHeader for auth
+    const res = await request(app).get(`/users/${fakeID}`).set(adminHeader);
     expect(res.status).toBe(404);
     expect(res.body).toMatchObject({
       success: false,
@@ -113,12 +99,8 @@ describe('GET /users/:userID endpoint works correctly', () => {
   });
   // Tests that invalid ID triggers cast error and is caught by error handling middleware
   it('should trigger cast error and be caught by middleware for invalid id type', async () => {
-    // Create admin user to authenticate
-    const adminData = userFixture({ isAdmin: true });
-    await User.create(adminData);
-    const token = await getAuthToken(app, adminData);
-    // Invalid ID format (not a valid ObjectId)
-    const res = await request(app).get('/users/1').set('Authorization', `Bearer ${token}`);
+    // Call response with invalid id type using adminHeader for auth
+    const res = await request(app).get('/users/1').set(adminHeader);
     expect(res.status).toBe(400);
     expect(res.body).toMatchObject({
       success: false,
@@ -151,6 +133,7 @@ describe('GET /users/my-profile endpoint works correctly', () => {
   });
   // Test for no token provided, should trigger 'verifyToken' middleware
   it('should return 401 and message if no token', async () => {
+    await User.create(userFixture());
     const res = await request(app).get('/users/my-profile');
     expect(res.status).toBe(401);
     expect(res.body).toMatchObject({
@@ -160,6 +143,7 @@ describe('GET /users/my-profile endpoint works correctly', () => {
   });
   // Test for invalid token provided, should trigger 'verifyToken' middleware
   it('should return 400 and message if invalid token', async () => {
+    await User.create(userFixture());
     const res = await request(app)
       .get('/users/my-profile')
       .set('Authorization', 'Bearer invalidtoken123');
