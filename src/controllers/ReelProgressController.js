@@ -85,8 +85,11 @@ export const getReelProgress = async (request, response, next) => {
 // Update reelprogress record (rating - user)
 export const updateReelProgress = async (request, response, next) => {
   try {
+    // User attached from JWT
     const { userId } = request.user;
+    // movieId sent as request param :movieId
     const { movieId } = request.params;
+    // Only expected field of "rating" taken from JSON body
     const { rating } = request.body;
 
     // Update the specific movie's rating in the user's reelProgress
@@ -113,24 +116,147 @@ export const updateReelProgress = async (request, response, next) => {
       });
     }
 
+    // Upon success:
     return response.status(200).json({
       success: true,
       message: 'Rating updated',
       newRating: rating,
     });
-
-    // Upon success:
+    // Unexpected errors passed to error handler
   } catch (error) {
     return next(error);
   }
 };
 
 // Delete reelProgress record (user)
+export const deleteReelProgress = async (request, response, next) => {
+  try {
+    // User attached from JWT token
+    const { userId } = request.user;
+    // Movie id passed as request param :movieId
+    const { movieId } = request.params;
+
+    // Find the reel progress if it exists
+    const reelToDelete = await User.findOne({
+      _id: userId,
+      'reelProgress.movie': movieId,
+    });
+
+    // IF it doesn't exist:
+    if (!reelToDelete) {
+      return response.status(404).json({
+        success: false,
+        message: 'Movie not found in your Reel Progress',
+      });
+    }
+
+    // Only executes if the movie exists, NOT findOneAndDelete, this will delete the entire USER record
+    // We use $pull instead
+    await User.findOneAndUpdate(
+      // User id passed from JWT
+      {
+        _id: userId,
+      },
+      // $pull deletes ONLY the sub document
+      {
+        $pull: {
+          reelProgress: { movie: movieId },
+        },
+      },
+    );
+
+    // On success:
+    return response.status(200).json({
+      success: true,
+      message: 'Reel Progress record deleted successfully',
+    });
+    // Unexpected errors passed to  the error handler
+  } catch (error) {
+    return next(error);
+  }
+};
 
 // Get reelProgress records (all - admin)
+export const adminGetAllReels = async (request, response, next) => {
+  try {
+    // Big aggregate function basically gets everything in the format that admin would require with only necessary data
+    const reelProgressData = await User.aggregate([
+      // Filters out users with NO reelProgress records
+      { $unwind: '$reelProgress' },
+      // Gets all fields and values required for response
+      {
+        $lookup: {
+          from: 'movies',
+          localField: 'reelProgress.movie',
+          foreignField: '_id',
+          as: 'movieDetails',
+          pipeline: [{ $project: { title: 1, year: 1 } }],
+        },
+      },
+      // Filters out any empty movieDetails arrays (if a movie is deleted from the database it won't be shown here) for edge cases
+      { $unwind: '$movieDetails' },
+      // Formats the returned aggregate data into a more readable/clean format
+      {
+        $group: {
+          _id: '$_id', // userId comes up first
+          username: { $first: '$username' }, // then username
+          reelProgress: {
+            $push: {
+              movieDetails: '$movieDetails', // then movie title and year
+              rating: '$reelProgress.rating', // then rating (if any)
+              isWatched: '$reelProgress.isWatched', // then isWatched status (technically not required but just in case)
+            },
+          },
+        },
+      },
+    ]);
 
-// Get reelProgress single (any-user admin)
-
-// Update reelProgress record (any-user admin)
+    return response.status(200).json({
+      success: true,
+      reelProgressData,
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
 
 // Delete reelProgress record (any-user admin)
+export const adminDeleteReelProgress = async (request, response, next) => {
+  try {
+    // Get userId and movieID from request params
+    const { userId, movieId } = request.params;
+
+    // Find the user Reel Progress record if it exists
+    const userReel = await User.findOne({
+      _id: userId,
+      'reelProgress.movie': movieId,
+    });
+
+    // IF it doesn't exist:
+    if (!userReel) {
+      return response.status(404).json({
+        success: false,
+        message: `User has no Reel Progress record for movie with id: ${movieId}`,
+      });
+    }
+
+    // Only executes if the record exists: ...AndUpdate not ...AndDelete, delete would delete the user record
+    await User.findOneAndUpdate(
+      {
+        _id: userId,
+      },
+      { $pull: { reelProgress: { movie: movieId } } }, // $Pull again, deletes the subrecord not the user record
+    );
+
+    // IF successful:
+    return response.status(200).json({
+      success: true,
+      message: 'User Reel Progress record deleted successfully',
+    });
+    // Unexpected errors passed to the error handler
+  } catch (error) {
+    return next(error);
+  }
+};
+// Delete orphaned reelProgress records (any reelProgress records for movies which no longer exist in the database)
+// database cleanup could be added later not implemented at this stage of development
