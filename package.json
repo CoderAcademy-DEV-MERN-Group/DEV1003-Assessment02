@@ -5,9 +5,9 @@
   "main": "app.js",
   "type": "module",
   "scripts": {
-    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --testTimeout=10000",
-    "test:watch": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --watch",
-    "test:coverage": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "test": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules --no-warnings=ExperimentalWarning' jest --testTimeout=10000",
+    "test:watch": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules --no-warnings=ExperimentalWarning' jest --watch",
+    "test:coverage": "NODE_ENV=test NODE_OPTIONS='--experimental-vm-modules --no-warnings=ExperimentalWarning' jest --coverage",
     "seed:movies": "tsx ./src/database/seedMovies.js",
     "seed:movies:deployed": "NODE_ENV=production tsx ./src/database/seedMovies.js",
     "start": "NODE_ENV=production tsx ./src/index.js",
