@@ -191,6 +191,28 @@ describe('ReelProgress Routes', () => {
       });
     });
 
+    it('should return 400 when no rating provided', async () => {
+      // create user with existing record
+      const user = await User.findOne({});
+      user.reelProgress = reelProgressFixture();
+      await user.save();
+
+      const movieId = user.reelProgress[0].movie; // Get the actual movie ID
+      // Send rating outside of check constraint
+      const missingRating = {};
+
+      const response = await request(app)
+        .patch(`/reel-progress/${movieId}`)
+        .set(authHeader)
+        .send(missingRating)
+        .expect(400);
+
+      expect(response.body).toMatchObject({
+        success: false,
+        message: 'Rating is required',
+      });
+    });
+
     it('should return 400 when invalid rating provided', async () => {
       // create user with existing record
       const user = await User.findOne({});
@@ -212,6 +234,29 @@ describe('ReelProgress Routes', () => {
         success: false,
         message: 'Schema validation failed',
         errors: expect.arrayContaining([expect.stringMatching(/rating|min|max/)]), // Should mention rating constraints
+      });
+    });
+
+    it('should return 400 when invalid fields provided', async () => {
+      // Create movie with valid id
+      const movie = await Movie.create(movieFixture());
+
+      const badFields = {
+        rating: 4,
+        thisFieldIsJunk: 'should fail',
+        anotherJunkField: 'should also fail',
+      };
+
+      const response = await request(app)
+        .patch(`/reel-progress/${movie.id}`)
+        .set(authHeader)
+        .send(badFields)
+        .expect(400);
+
+      expect(response.body).toMatchObject({
+        success: false,
+        message: 'Unexpected field(s) in reelProgress: thisFieldIsJunk, anotherJunkField',
+        expectedFields: ['movie', 'rating', 'isWatched'],
       });
     });
   });

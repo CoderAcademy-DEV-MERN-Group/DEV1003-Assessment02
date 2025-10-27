@@ -92,6 +92,14 @@ export const updateReelProgress = async (request, response, next) => {
     // Only expected field of "rating" taken from JSON body
     const { rating } = request.body;
 
+    // Check if rating is provided (not simple truthy v falsy as updating to null is applicable)
+    if (rating === undefined) {
+      return response.status(400).json({
+        success: false,
+        message: 'Rating is required',
+      });
+    }
+
     // Update the specific movie's rating in the user's reelProgress
     const userReelProgress = await User.findOneAndUpdate(
       {
