@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
 import request from 'supertest';
 import { clearTestDb, setupTestDb, teardownTestDb } from '../setup/testDb';
 import { movieFixture } from '../setup/fixtures';
@@ -9,18 +9,9 @@ import { adminRequest, authenticatedRequest } from '../setup/authHelper';
 // set up empty variables to be assigned in beforeAll hooks
 let authHeader;
 let adminHeader;
-let consoleSpy;
 
 beforeAll(async () => {
-  // Mock console log and error outputs to prevent cluttering console and catch specific logs if needed
-  consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-  consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-  await setupTestDb(); // Set up in memory MongoDB database
-});
-
-afterAll(async () => {
-  await teardownTestDb(); // Teardown in memory MongoDB database
-  consoleSpy.mockRestore(); // Restore console log and error after tests complete
+  await setupTestDb(); // Set up in memory MongoDB database and console spies
 });
 
 // before each request, set the authHeader variable using the authenticatedRequest helper function
@@ -29,6 +20,10 @@ beforeEach(async () => {
   await clearTestDb();
   authHeader = await authenticatedRequest();
   adminHeader = await adminRequest();
+});
+
+afterAll(async () => {
+  await teardownTestDb(); // Teardown in memory MongoDB database and restore console spies
 });
 
 describe('GET /movies/reel-canon', () => {

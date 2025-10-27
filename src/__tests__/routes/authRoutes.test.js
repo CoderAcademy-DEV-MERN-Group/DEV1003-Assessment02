@@ -1,19 +1,13 @@
 import request from 'supertest';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
 import { app } from '../../server';
 import User from '../../models/User';
 import { userFixture } from '../setup/fixtures';
 import { clearTestDb, setupTestDb, teardownTestDb } from '../setup/testDb';
 
-// Empty variables to be assigned in before hooks
-let consoleSpy;
-
 // Runs before all tests in file
 beforeAll(async () => {
-  await setupTestDb(); // Set up in memory MongoDB database
-  // Mock console log and error outputs to prevent cluttering console and catch specific logs if needed
-  consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-  consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  await setupTestDb(); // Set up in memory MongoDB database and console spies
 });
 // Runs before each test in file
 beforeEach(async () => {
@@ -21,8 +15,7 @@ beforeEach(async () => {
 });
 // Runs after all tests in file
 afterAll(async () => {
-  await teardownTestDb(); // Teardown in memory MongoDB database
-  consoleSpy.mockRestore(); // Restore console log and error after tests complete
+  await teardownTestDb(); // Teardown in memory MongoDB database and restore console spies
 });
 
 describe('POST /auth/register', () => {

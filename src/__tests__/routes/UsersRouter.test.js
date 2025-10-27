@@ -1,14 +1,5 @@
 // Only jest and expect import required, others imported for clarity
-import {
-  describe,
-  it,
-  expect,
-  beforeAll,
-  afterAll,
-  beforeEach,
-  // afterEach,
-  jest,
-} from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals';
 import request from 'supertest';
 import { app } from '../../server';
 import { setupTestDb, clearTestDb, teardownTestDb } from '../setup/testDb';
@@ -17,14 +8,11 @@ import { userFixture, getAuthToken } from '../setup/fixtures';
 import { authenticatedRequest, adminRequest } from '../setup/authHelper';
 
 // Empty variables to be assigned in beforeAll hooks
-let consoleSpy;
 let authHeader;
 let adminHeader;
 
 beforeAll(async () => {
-  await setupTestDb(); // Set up in memory MongoDB database
-  // Mock console log and error outputs to prevent cluttering console and catch specific logs if needed
-  consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  await setupTestDb(); // Set up in memory MongoDB database and console spies
 });
 
 beforeEach(async () => {
@@ -34,8 +22,7 @@ beforeEach(async () => {
 });
 
 afterAll(async () => {
-  await teardownTestDb(); // Teardown in memory MongoDB database
-  consoleSpy.mockRestore(); // Restore console log and error after tests complete
+  await teardownTestDb(); // Teardown in memory MongoDB database and restore console spies
 });
 
 // Test admin endpoint for getting all users works correctly
