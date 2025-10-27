@@ -44,6 +44,15 @@ This project adheres to the [Airbnb JavaScript Style Guide](https://github.com/a
 
 ### 1.1 Core Dependencies
 
+### Node.js
+
+- **Industry Relevance**: As of the most recent [Stack Overflow Survey](https://survey.stackoverflow.co/2025/technology/) Node.js remains the most used JS runtime environment, both amongst professional developers and student developers, with 48% of developers having used it extensively in their projects. Node.js has wide community support, and is still the most accessible runtime environment, no matter what JS framework you are using for your API. Node is also open source, allowing for flexible use and project specific manipulation.
+- **Purpose & Usage**: Node.js executes all server-side Javascript. It essentially allows all of our coded .js files to run without the need for a browser to interpret JS language. Node.js allows us to develop our entire stack using unified JavaScript code, unlike other runtime environments which may fragment development into separate languages.
+- **Comparison**:
+  - **Deno**: A newer JS runtime by the same creator as Node.js, with built in TypeScript support. The ecosystem itself is smaller, with less support and community use. Though it includes more built in packages, it is not well maintained. Node.js better serves our application due to wide community support and thorough documentation.
+  - **Bun**: A smaller but all-in-one JS toolkit, it is written in Zig (a newer systems programming language) which offers better performance in comparison to Node's C++ architecture. Again, the ecosystem and community support for Bun is not wide, and it does involve a higher learning curve than Node.js, and can be difficult to troubleshoot due to lower uptake across the dev community.
+- **License**: MIT License
+
 #### Express.js
 
 - **Industry Relevance:** As of the most recent [State of Javascript Survey](https://2024.stateofjs.com/en-US/other-tools/#backend_frameworks) Express.js is still the most used back-end framework, with 68% of respondents having used it in their development. It is still the foundation for many other frameworks (Nest.js, Feathers, LoopBack) and has a huge amount of accessible documentation and community support.
