@@ -58,21 +58,6 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // // Custom Errors for Friendship model validations
-  // if (err.name === 'InvalidUserIdError') {
-  //   return res.status(400).json({
-  //     success: false,
-  //     message: 'One or both user IDs provided are invalid.',
-  //   });
-  // }
-
-  // if (err.name === 'SelfFriendError') {
-  //   return res.status(400).json({
-  //     success: false,
-  //     message: 'A user cannot send a friend request to themselves.',
-  //   });
-  // }
-
   /* Custom application errors for raising new errors or reusable custom errors
   normal error objects don't have statusCode property, that's attached before calling next */
   if (err.statusCode) {
