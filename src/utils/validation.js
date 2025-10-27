@@ -51,7 +51,7 @@ const validateReelProgress = (request, response, next) => {
   if (extraFields.length > 0) {
     return response.status(400).json({
       success: false,
-      message: `Unexpected field(s) in reelProgress: ${extraFields.join(', ')}}`,
+      message: `Unexpected field(s) in reelProgress: ${extraFields.join(', ')}`,
       expectedFields: allowedFields,
     });
   }

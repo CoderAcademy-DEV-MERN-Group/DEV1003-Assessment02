@@ -8,13 +8,14 @@ import {
   getReelProgress,
   updateReelProgress,
 } from '../controllers/ReelProgressController';
+import { validateReelProgress } from '../utils/validation';
 
 const router = Router();
 
 // User authorized routes
 router.get('/', verifyToken, getReelProgress);
-router.post('/', verifyToken, createReelProgress);
-router.patch('/:movieId', verifyToken, updateReelProgress);
+router.post('/', verifyToken, validateReelProgress, createReelProgress);
+router.patch('/:movieId', verifyToken, validateReelProgress, updateReelProgress);
 router.delete('/:movieId', verifyToken, deleteReelProgress);
 
 // Admin authorized routes

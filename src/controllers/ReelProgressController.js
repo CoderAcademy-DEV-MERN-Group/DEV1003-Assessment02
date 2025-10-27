@@ -62,7 +62,7 @@ export const getReelProgress = async (request, response, next) => {
     );
 
     // Check the user has reelProgress records
-    if (!userData) {
+    if (userData.reelProgress.length === 0) {
       return response.status(404).json({
         success: false,
         message: 'No Reel Progress records found',
@@ -226,11 +226,17 @@ export const adminDeleteReelProgress = async (request, response, next) => {
     // Get userId and movieID from request params
     const { userId, movieId } = request.params;
 
-    // Find the user Reel Progress record if it exists
-    const userReel = await User.findOne({
-      _id: userId,
-      'reelProgress.movie': movieId,
-    });
+    // Check if user exists first
+    const user = await User.findById(userId);
+    if (!user) {
+      return response.status(404).json({
+        success: false,
+        message: `User not found with id: ${userId}`,
+      });
+    }
+
+    // Then check for reelProgress record:
+    const userReel = user.reelProgress.some((progress) => progress.movie.toString() === movieId);
 
     // IF it doesn't exist:
     if (!userReel) {
