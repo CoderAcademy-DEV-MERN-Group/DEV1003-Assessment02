@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import jwtConfig from '../config/config';
+import User from '../models/User';
 
 // Create JWT token for authenticated user
 const generateToken = (user) => {
@@ -18,7 +19,7 @@ const generateToken = (user) => {
 };
 
 // middleware to verify JWT token on protected Routes
-const verifyToken = (request, response, next) => {
+const verifyToken = async (request, response, next) => {
   // Get token from Authorization header, remove the Bearer prefix to get just the token
 
   const token = request.header(jwtConfig.TOKEN_HEADER_KEY)?.replace('Bearer ', '');
@@ -35,6 +36,15 @@ const verifyToken = (request, response, next) => {
     // Verify the token using our secret key
     // Should throw error if token is invalid, expired, or tampered with
     const decoded = jwt.verify(token, jwtConfig.JWT_SECRET_KEY);
+
+    // Double check user exists in the database
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return response.status(401).json({
+        success: false,
+        message: 'User no longer exists',
+      });
+    }
 
     // Attach decoded user information to the request object
     // User data is made available to any subsequent middleware/route handlers

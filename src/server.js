@@ -18,6 +18,7 @@ import {
   MoviesRouter,
   RatingsRouter,
   UsersRouter,
+  ReelProgressRouter,
 } from './routes/index';
 
 dotenv.config(); // Make .env data available for use
@@ -64,6 +65,7 @@ app.use('/lists', ListsRouter);
 app.use('/movies', MoviesRouter);
 app.use('/ratings', RatingsRouter);
 app.use('/users', UsersRouter);
+app.use('/reel-progress', ReelProgressRouter);
 
 /* Connect to database, using different DBs depending on environment
 (test uses mongodb-memory-server, handled in test setup) */
