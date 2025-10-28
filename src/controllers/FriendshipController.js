@@ -45,7 +45,7 @@ export const getAllFriendships = async (req, respond, next) => {
 export const getUserFriendships = async (req, respond, next) => {
   try {
     // Get id from req parameters or user object
-    const userId = req.params?.userId || req.user.id;
+    const userId = req.params?.userId || req.user.userId;
     // // Database query to get friendships for the specific user
     const friendships = await Friendship.find({
       $or: [{ user1: userId }, { user2: userId }],
@@ -97,16 +97,48 @@ export const createFriendship = async (req, res, next) => {
   }
 };
 
-// // Update friendships
+// Update friendships
 // router.put('/my-friends/:id', verifyToken, updateFriendship);
-export const updateFriendship = async (req, respond, next) => {
+export const updateFriendship = async (req, res, next) => {
   try {
-    // Get friendship id from req parameters or attached user object
-    // Get update data from req body (maybe, if only handling changing bool then no need)
-    // Update the friendship document in the database
-    // Return the updated friendship
+    // Get user1 id from req parameters or attached user object
+    const recipientUserId = req.body?.recipientUserId || req.user.userId;
+    const requesterUserId = req.body?.requesterUserId || req.params.requesterUserId;
+    // Get friendship document by the combination of user1 and user2 ids where requestedUserId is user2
+
+    // Sort id's by smallest id first
+    const [user1, user2] = [requesterUserId, recipientUserId].sort();
+
+    // Query the database to find and update the friendship document
+    const updatedFriendship = await Friendship.findOneAndUpdate(
+      {
+        user1,
+        user2,
+        requesterUserId,
+        friendRequestAccepted: false,
+      },
+      {
+        friendRequestAccepted: true,
+      },
+      {
+        new: true, // Return the updated document
+      },
+    );
+    // If returned updated friend request is null, send bad request response
+    if (!updatedFriendship) {
+      return res.status(400).json({
+        success: false,
+        message: 'Pending friendship document not found with provided parameters',
+      });
+    }
+    // Else return the updated friendship and success response
+    return res.status(200).json({
+      success: true,
+      message: 'Friend request accepted successfully',
+      updatedFriendship,
+    });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 

@@ -23,10 +23,10 @@ router.get('/:userId', verifyToken, requireAdmin, getUserFriendships);
 router.post('/', verifyToken, createFriendship);
 
 // Update friendships
-router.put('/my-friends/:id', verifyToken, updateFriendship);
+router.put('/my-friends/:requesterUserId', verifyToken, updateFriendship);
 
 // Update friendships for a specific user by userId (admin only)
-router.put('/:id', verifyToken, updateFriendship);
+router.put('/', verifyToken, updateFriendship);
 
 // Remove an existing friendship (unfriend)
 router.delete('/my-friends/:id', verifyToken, removeFriendship);
@@ -97,3 +97,19 @@ htttp:website/someone-elses-profile/their-friends
  - so the response is the friends for that user from friendships/:id route
 
 */
+
+// www.google.com/userId=12345
+// req.params.userId = 12345
+// www.google.com/?userId=12345
+// req.query.userId = 12345
+// www.google.com/ with body { userId: 12345 }
+// req.body.userId = 12345
+
+// website/my-friends/:otherUserId/
+// website/otherUserId/:userId'
+
+// website/my-friends?otherUserId=67890
+// website/userId=16451?otherUserId=67890
+
+// website/my-friends with body { OtherUserId: 12345 }
+// website/userId with body { userId: 67890, otherUserId: 12345 }

@@ -162,3 +162,88 @@ then create a friendship for the regular user
 then call the admin route with the regular user's id
 now we can check that the returned friendships belong to the regular user
 */
+
+// Test that user route for accepting a friend request works
+describe('PUT /friendships/my-friends/:id route for accepting a friend request works', () => {
+  // Test that friendship can successfully be updated to accepted
+  it('should successfully update a friend request to accepted', async () => {
+    const userData = userFixture();
+    const user = await User.create(userData);
+    const token = await getAuthToken(app, userData);
+    const user2 = await User.create(userFixture());
+    const [user1Id, user2Id] = [user.id, user2.id].sort(); // (1,2)/(2,1)
+    await Friendship.create(
+      friendshipFixture({
+        user1: user.id,
+        user2: user2.id,
+        requesterUserId: user2.id,
+      }),
+    );
+    const response = await request(app)
+      .put(`/friendships/my-friends/${user2.id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      message: 'Friend request accepted successfully',
+      updatedFriendship: {
+        user1: user1Id,
+        user2: user2Id,
+        requesterUserId: user2.id,
+        friendRequestAccepted: true,
+      },
+    });
+  });
+
+  // Test that it returns 400 if no pending friendship found
+  it('should return 400 if no pending friendship found to accept', async () => {
+    const userData = userFixture();
+    await User.create(userData);
+    const token = await getAuthToken(app, userData);
+    const user2 = await User.create(userFixture());
+    const response = await request(app)
+      .put(`/friendships/my-friends/${user2.id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      success: false,
+      message: 'Pending friendship document not found with provided parameters',
+    });
+  });
+
+  // Test that an admin can accept a friend request on behalf of a user
+  it('should allow admin to accept a friend request on behalf of a user', async () => {
+    const user2 = await User.create(userFixture());
+    const userData = userFixture();
+    const user = await User.create(userData);
+    const [user1Id, user2Id] = [user.id, user2.id].sort(); // (1,2)/(2,1)
+    await Friendship.create(
+      friendshipFixture({
+        user1: user.id,
+        user2: user2.id,
+        requesterUserId: user2.id,
+      }),
+    );
+    const response = await request(app)
+      .put(`/friendships/`)
+      .set(adminHeader)
+      .send({ recipientUserId: user.id, requesterUserId: user2.id });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      message: 'Friend request accepted successfully',
+      updatedFriendship: {
+        user1: user1Id,
+        user2: user2Id,
+        requesterUserId: user2.id,
+        friendRequestAccepted: true,
+      },
+    });
+  });
+
+  // Test that it returns 400 if admin forgets to provide response body
+  it('should return 400 if admin forgets to provide request body', async () => {
+    const response = await request(app).put(`/friendships/`).set(adminHeader).send({});
+    expect(response.status).toBe(400);
+  });
+});
