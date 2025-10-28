@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { describe, it, expect, beforeAll, afterAll, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import { app } from '../../server';
@@ -91,32 +92,22 @@ describe('GET /friendships/my-friends', () => {
 describe('POST /friendships route for creating a friendship works', () => {
   // Test that it doesn't work without token
   it('should return 401 if no token provided', async () => {
-    const response = await request(app).post('/friendships').send({
-      recipientUserId: 'someuserid',
-    });
+    const recipientUser = userFixture();
+    const response = await request(app).post(`/friendships/${recipientUser.id}`);
     expect(response.status).toBe(401);
   });
   // Test that it returns 400 if recipient user does not exist
   it('should return 400 if recipient user does not exist', async () => {
-    const user = userFixture();
-    const response = await request(app).post('/friendships').set(authHeader).send({
-      recipientUserId: user.id, // Valid user id but not in DB
-    });
+    const recipientUserId = new mongoose.Types.ObjectId();
+    // call the endpoint with a valid but non-existent user id parameter
+    const response = await request(app).post(`/friendships/${recipientUserId}`).set(authHeader);
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject({
       success: false,
       message: 'Provided recipient user does not exist',
     });
   });
-  // Test that it returns 400 if recipient user id is missing
-  it('should return 400 if recipient user id is missing', async () => {
-    const response = await request(app).post('/friendships').set(authHeader).send({});
-    expect(response.status).toBe(400);
-    expect(response.body).toMatchObject({
-      success: false,
-      message: 'Provided recipient user does not exist',
-    });
-  });
+
   // Test that it creates a friendship successfully
   it('should create a friendship successfully', async () => {
     const user = userFixture();
@@ -125,11 +116,8 @@ describe('POST /friendships route for creating a friendship works', () => {
     const recipientUser = await User.create(userFixture());
     const sortedUserIds = [user1.id, recipientUser.id].sort();
     const response = await request(app)
-      .post('/friendships')
-      .set('Authorization', `Bearer ${token}`)
-      .send({
-        recipientUserId: recipientUser.id,
-      });
+      .post(`/friendships/${recipientUser.id}`)
+      .set('Authorization', `Bearer ${token}`);
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({
       success: true,
@@ -143,16 +131,6 @@ describe('POST /friendships route for creating a friendship works', () => {
     });
   });
 });
-/*
-if we call admin route with params (friendships/:12345) it should return friendships for that user with id 12345
-what it was actually doing was returning friendships for the admin not the user with id 12345
-but the test was passing because the admin also had no friendships so an empty array was returned either way 
-we have no way of testing that the correct user's friendships were returned because both users had no friendships
-to fix this, we can create two users, one admin and one regular user
-then create a friendship for the regular user
-then call the admin route with the regular user's id
-now we can check that the returned friendships belong to the regular user
-*/
 
 // Test that user route for accepting a friend request works
 describe('PUT /friendships/my-friends/:id route for accepting a friend request works', () => {
@@ -317,9 +295,9 @@ describe('DELETE /friendships/my-friends/:otherUserId route for deleting a frien
     });
   });
 
-  //   // Test that it returns 400 if admin forgets to provide response body
-  //   it('should return 400 if admin forgets to provide request body', async () => {
-  //     const response = await request(app).put(`/friendships/`).set(adminHeader).send({});
-  //     expect(response.status).toBe(400);
-  //   });
+  // Test that it returns 400 if admin forgets to provide response body
+  it('should return 400 if admin forgets to provide request body', async () => {
+    const response = await request(app).put(`/friendships/`).set(adminHeader).send({});
+    expect(response.status).toBe(400);
+  });
 });
