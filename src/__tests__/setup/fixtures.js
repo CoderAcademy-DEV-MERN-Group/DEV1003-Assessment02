@@ -1,4 +1,5 @@
 import { faker } from '@faker-js/faker';
+import mongoose from 'mongoose';
 import request from 'supertest';
 
 const { username, email } = faker.internet;
@@ -37,10 +38,17 @@ export const movieFixture = (overrides = {}) => ({
   ...overrides,
 });
 
-const user1 = userFixture();
 export const friendshipFixture = (overrides = {}) => ({
-  user1: user1.id,
-  user2: userFixture().id,
-  requesterUserId: user1.id,
+  // Fill this out after creating movie model
   ...overrides,
 });
+
+// Helper function to generate movie reelProgress data
+export const reelProgressFixture = (count = 1, overrides = {}) => {
+  return Array.from({ length: count }, () => ({
+    movie: new mongoose.Types.ObjectId(),
+    rating: faker.number.int({ min: 1, max: 5 }),
+    isWatched: true,
+    ...overrides,
+  }));
+};
