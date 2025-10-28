@@ -1,13 +1,4 @@
-import {
-  describe,
-  it,
-  expect,
-  beforeAll,
-  afterAll,
-  beforeEach,
-  // afterEach,
-  jest,
-} from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import { app } from '../../server';
 import { setupTestDb, clearTestDb, teardownTestDb } from '../setup/testDb';
@@ -246,4 +237,89 @@ describe('PUT /friendships/my-friends/:id route for accepting a friend request w
     const response = await request(app).put(`/friendships/`).set(adminHeader).send({});
     expect(response.status).toBe(400);
   });
+});
+
+// Test that user route for deleting a friend request works
+describe('DELETE /friendships/my-friends/:otherUserId route for deleting a friendship document', () => {
+  // Test that friendship can successfully be updated to accepted
+  it('should successfully delete a friendship', async () => {
+    const userData = userFixture();
+    const user = await User.create(userData);
+    const token = await getAuthToken(app, userData);
+    const user2 = await User.create(userFixture());
+    const [user1Id, user2Id] = [user.id, user2.id].sort(); // (1,2)/(2,1)
+    await Friendship.create(
+      friendshipFixture({
+        user1: user.id,
+        user2: user2.id,
+        requesterUserId: user2.id,
+      }),
+    );
+    const response = await request(app)
+      .delete(`/friendships/my-friends/${user2.id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      message: 'Friendship document deleted successfully',
+      deletedFriendship: {
+        user1: user1Id,
+        user2: user2Id,
+        requesterUserId: user2.id,
+        friendRequestAccepted: false,
+      },
+    });
+  });
+
+  // Test that it returns 400 if no existing friendship found
+  it('should return 400 if no existing friendship found to delete', async () => {
+    const userData = userFixture();
+    await User.create(userData);
+    const token = await getAuthToken(app, userData);
+    const user2 = await User.create(userFixture());
+    const response = await request(app)
+      .delete(`/friendships/my-friends/${user2.id}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      success: false,
+      message: 'Friendship document not found with provided parameters',
+    });
+  });
+
+  // Test that an admin can delete a friendship on behalf of other users
+  it('should allow admin to delete a friendship on behalf of another user', async () => {
+    const user2 = await User.create(userFixture());
+    const userData = userFixture();
+    const user = await User.create(userData);
+    await Friendship.create(
+      friendshipFixture({
+        user1: user.id,
+        user2: user2.id,
+        requesterUserId: user2.id,
+      }),
+    );
+    const [user1Id, user2Id] = [user.id, user2.id].sort(); // (1,2)/(2,1)
+    const response = await request(app)
+      .delete(`/friendships/`)
+      .set(adminHeader)
+      .send({ userId: user.id, otherUserId: user2.id });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      success: true,
+      message: 'Friendship document deleted successfully',
+      deletedFriendship: {
+        user1: user1Id,
+        user2: user2Id,
+        requesterUserId: user2.id,
+        friendRequestAccepted: false,
+      },
+    });
+  });
+
+  //   // Test that it returns 400 if admin forgets to provide response body
+  //   it('should return 400 if admin forgets to provide request body', async () => {
+  //     const response = await request(app).put(`/friendships/`).set(adminHeader).send({});
+  //     expect(response.status).toBe(400);
+  //   });
 });

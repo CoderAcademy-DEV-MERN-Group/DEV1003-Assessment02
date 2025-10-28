@@ -146,13 +146,33 @@ export const updateFriendship = async (req, res, next) => {
 // router.delete('/my-friends/:id', verifyToken, removeFriendship);
 // // Remove an existing friendship for a specific user by userId (admin only)
 // router.delete('/:id', verifyToken, requireAdmin, removeFriendship);
-export const removeFriendship = async (req, respond, next) => {
+export const removeFriendship = async (req, res, next) => {
   try {
-    // Get friendship id from req parameters or attached user object
-    // Remove the friendship document from the database
-    // Return a success message with the removed friendship (maybe)
+    // Get both IDs from req body or params
+    const userId = req.body?.userId || req.user.userId;
+    const otherUserId = req.body?.otherUserId || req.params.otherUserId;
+
+    // Sort id's by smallest id first
+    const [user1, user2] = [userId, otherUserId].sort();
+
+    // Query the database to find and delete the friendship document
+    // Returns the deleted document if found, otherwise null
+    const deletedFriendship = await Friendship.findOneAndDelete({ user1, user2 });
+    // If returned updated friend request is null, send bad request response
+    if (!deletedFriendship) {
+      return res.status(400).json({
+        success: false,
+        message: 'Friendship document not found with provided parameters',
+      });
+    }
+    // Else return the deleted friendship and success response
+    return res.status(200).json({
+      success: true,
+      message: 'Friendship document deleted successfully',
+      deletedFriendship,
+    });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 

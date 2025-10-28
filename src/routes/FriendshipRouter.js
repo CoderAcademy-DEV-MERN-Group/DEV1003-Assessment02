@@ -29,10 +29,10 @@ router.put('/my-friends/:requesterUserId', verifyToken, updateFriendship);
 router.put('/', verifyToken, updateFriendship);
 
 // Remove an existing friendship (unfriend)
-router.delete('/my-friends/:id', verifyToken, removeFriendship);
+router.delete('/my-friends/:otherUserId', verifyToken, removeFriendship);
 
 // Remove an existing friendship for a specific user by userId (admin only)
-router.delete('/:id', verifyToken, requireAdmin, removeFriendship);
+router.delete('/', verifyToken, requireAdmin, removeFriendship);
 
 export default router;
 /*
