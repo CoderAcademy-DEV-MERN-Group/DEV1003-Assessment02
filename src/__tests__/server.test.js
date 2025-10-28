@@ -1,30 +1,21 @@
 // Only jest and expect import required, others imported for clarity
-import {
-  describe,
-  it,
-  expect,
-  beforeAll,
-  afterAll,
-  beforeEach,
-  afterEach,
-  jest,
-} from '@jest/globals';
+import { describe, it, expect, beforeAll, afterAll, beforeEach, jest } from '@jest/globals';
 import request from 'supertest';
 import { app } from '../server';
-import { setupTestDb, clearTestDb, teardownTestDb } from './setup/testDb';
+import { setupTestDb, clearTestDb, teardownTestDb, consoleErrorSpy } from './setup/testDb';
 import errorHandler from '../utils/errorHandler';
 
-// Setup, clear and teardown in memory MongoDB database for testing
 beforeAll(async () => {
-  await setupTestDb();
-});
-
-afterAll(async () => {
-  await teardownTestDb();
+  await setupTestDb(); // Set up in memory MongoDB database and console spies
 });
 
 beforeEach(async () => {
-  await clearTestDb();
+  await clearTestDb(); // Clear database before each test
+});
+
+// Runs after all tests in file
+afterAll(async () => {
+  await teardownTestDb(); // Teardown in memory MongoDB database and restore console spies
 });
 
 // A basic test to verify Jest is set up correctly
@@ -126,15 +117,6 @@ describe('Middleware is configured correctly', () => {
 
 // Tests to check database-dump route works for dev and test but not prod
 describe('Database dump route works for dev & test, not prod', () => {
-  // Turn off console.log for these tests to reduce clutter
-  let consoleSpy;
-  beforeAll(() => {
-    consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-  });
-  afterAll(() => {
-    consoleSpy.mockRestore();
-  });
-
   // Test in test environment
   it('should return 200 and data object in test environment', async () => {
     const res = await request(app).get('/database-dump');
@@ -171,10 +153,8 @@ describe('Error handling middleware catches and process expected errors', () => 
   let req;
   let res;
   let next;
-  let consoleSpy;
   beforeEach(() => {
     // Allows catching and reading of console.error and prevents output in terminal
-    consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     req = {};
     // Jest.fn() records calls and arguments for inspecting
     res = {
@@ -185,16 +165,12 @@ describe('Error handling middleware catches and process expected errors', () => 
     next = jest.fn();
   });
 
-  afterEach(() => {
-    consoleSpy.mockRestore();
-  });
-
   // Test errors are logged to console
   it('should log error to console for any error', async () => {
     const err = new Error('Test error logging');
     Object.assign(err, { name: 'testError', code: 1234, stack: 'Error stack trace' });
     errorHandler(err, req, res, next);
-    expect(consoleSpy).toHaveBeenCalledWith('The following error occurred:', {
+    expect(consoleErrorSpy).toHaveBeenCalledWith('The following error occurred:', {
       name: err.name,
       code: err.code,
       message: err.message,

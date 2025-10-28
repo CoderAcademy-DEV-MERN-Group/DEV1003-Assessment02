@@ -1,25 +1,25 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from '@jest/globals';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
 import User from '../../models/User';
 import { clearTestDb, setupTestDb, teardownTestDb } from '../setup/testDb';
 import { userFixture } from '../setup/fixtures';
 
-// Setup, clear and teardown in memory test MongoDB database. Declare globally to use in all tests.
+// Runs before all tests in file
 beforeAll(async () => {
-  await setupTestDb();
+  await setupTestDb(); // Set up in memory MongoDB database and console spies
 });
-
-afterAll(async () => {
-  await teardownTestDb();
-});
-
+// Runs before each test in file
 beforeEach(async () => {
-  await clearTestDb();
+  await clearTestDb(); // Clear database before each test
+});
+// Runs after all tests in file
+afterAll(async () => {
+  await teardownTestDb(); // Teardown in memory MongoDB database and restore console spies
 });
 
 // Tests for User model schema validation
 describe('User Schema validation', () => {
   // Tests creating user with valid data works
-  test('Create user with valid data and hash password before saving', async () => {
+  it('Create user with valid data and hash password before saving', async () => {
     const userData = userFixture();
     const testUser = await User.create(userData);
     const keys = ['username', 'email', 'isAdmin'];
@@ -38,31 +38,40 @@ describe('User Schema validation', () => {
     ['no symbol', 'Abcdefg1'],
   ];
   // Create a test for each invalid password case, '%s' replaced by first element in each array
-  test.each(passwordTests)('should reject password for: %s', async (_, password) => {
+  it.each(passwordTests)('should reject password for: %s', async (_, password) => {
     const userData = userFixture({ password });
-    await expect(User.create(userData)).rejects.toThrow();
+    await expect(User.create(userData)).rejects.toThrow(
+      expect.objectContaining({ name: 'ValidationError' }),
+    );
   });
   // Test for rejecting incorrect email format
-  test('should reject incorrect email format', async () => {
+  it('should reject incorrect email format', async () => {
     const userData = userFixture({ email: 'invalid-email' });
-    await expect(User.create(userData)).rejects.toThrow();
+    await expect(User.create(userData)).rejects.toThrow(
+      expect.objectContaining({ name: 'ValidationError' }),
+    );
   });
   // Test for rejecting duplicate usernames
-  test('should reject duplicate username', async () => {
+  it('should reject duplicate username', async () => {
     const username = 'duplicateUser';
     const userData1 = userFixture({ username });
     const userData2 = userFixture({ username });
 
     await User.create(userData1);
-    await expect(User.create(userData2)).rejects.toThrow();
+    await expect(User.create(userData2)).rejects.toThrow(
+      expect.objectContaining({ name: 'MongoServerError' }),
+    );
   });
   // Test for rejecting duplicate emails
-  test('should reject duplicate email', async () => {
+  it('should reject duplicate email', async () => {
     const email = 'someuser@email.com';
-    const userData1 = userFixture({ email });
-    const userData2 = userFixture({ email });
-
+    // Create two user fixtures with identical email
+    const [userData1, userData2] = [userFixture({ email }), userFixture({ email })];
+    // Add first user to database
     await User.create(userData1);
-    await expect(User.create(userData2)).rejects.toThrow();
+    // Expect adding second user to throw MongoServerError for duplicate key
+    await expect(User.create(userData2)).rejects.toThrow(
+      expect.objectContaining({ name: 'MongoServerError' }),
+    );
   });
 });
