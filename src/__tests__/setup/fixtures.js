@@ -4,7 +4,7 @@ import request from 'supertest';
 
 const { username, email } = faker.internet;
 
-/* Takes optional 'overrides' object to replace any default values, defaults to empty object if not 
+/* Takes optional 'overrides' object to replace any default values, defaults to empty object if not
 provided. Spread operator replaces any default values if key matches, else adds new key/value pairs. */
 export const userFixture = (overrides = {}) => ({
   username: username(),
@@ -38,8 +38,11 @@ export const movieFixture = (overrides = {}) => ({
   ...overrides,
 });
 
+const user1 = userFixture();
 export const friendshipFixture = (overrides = {}) => ({
-  // Fill this out after creating movie model
+  user1: user1.id,
+  user2: userFixture().id,
+  requesterUserId: user1.id,
   ...overrides,
 });
 
