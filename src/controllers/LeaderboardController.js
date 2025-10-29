@@ -30,10 +30,12 @@ export const getLeaderboard = async (req, response, next) => {
       { $sort: { reelProgressCount: -1 } },
     ]);
 
+    // IF statement goes here
+
     return response.status(200).json({
-      success: true,
-      data: reelProgressData,
-      updatedAt: now,
+      success: true, // expect response.body.succuess toBe true
+      data: reelProgressData, // expect response.body.data.length > 0 / or has this property
+      updatedAt: now, // expect response.body toHaveProperty updatedAt
     });
   } catch (error) {
     return next(error);
