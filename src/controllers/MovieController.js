@@ -7,7 +7,10 @@ export const getReelCanon = async (request, response, next) => {
   try {
     // Find all movies with isReelCanon
     const movies = await Movie.find({ isReelCanon: true });
-    return response.json(movies);
+    return response.status(200).json({
+      success: true,
+      movies,
+    });
     // Pass errors to the error handler
   } catch (error) {
     return next(error);

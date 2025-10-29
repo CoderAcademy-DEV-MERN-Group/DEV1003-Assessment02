@@ -34,8 +34,8 @@ describe('GET /movies/reel-canon', () => {
     const response = await request(app).get('/movies/reel-canon');
 
     expect(response.status).toBe(200);
-    expect(response.body.length).toBe(5);
-    response.body.forEach((movie) => {
+    expect(response.body.movies.length).toBe(5);
+    response.body.movies.forEach((movie) => {
       expect(movie).toHaveProperty('title');
       expect(movie).toHaveProperty('year');
       expect(movie).toHaveProperty('director');
