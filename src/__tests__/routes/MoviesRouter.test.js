@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
 import request from 'supertest';
 import { clearTestDb, setupTestDb, teardownTestDb } from '../setup/testDb';
-import { movieFixture, userFixture } from '../setup/fixtures';
+import { movieFixture } from '../setup/fixtures';
 import { app } from '../../server';
 import Movie from '../../models/Movie';
 import { adminRequest, authenticatedRequest } from '../setup/authHelper';
