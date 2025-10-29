@@ -95,7 +95,7 @@ async function seedUsers() {
         }));
 
         // Find existing user by username
-        let user = await User.findOne({ username: userData.username });
+        const user = await User.findOne({ username: userData.username });
 
         if (user) {
           // Update fields if user already exists

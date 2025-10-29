@@ -168,13 +168,6 @@ export const deleteMovie = async (request, response, next) => {
       });
     }
 
-    if (movie.createdBy !== userId) {
-      return response.status(403).json({
-        success: false,
-        message: 'Cannot delete movies created by other users',
-      });
-    }
-
     // If the movie is in the Reel Canon:
     // NOTE: the schema level pre hook still saves from direct deleteOne requests made to the database
     // This is a second layer of protection for the canon
@@ -182,6 +175,13 @@ export const deleteMovie = async (request, response, next) => {
       return response.status(403).json({
         success: false,
         message: 'Reel Canon movies cannot be deleted',
+      });
+    }
+
+    if (movie.createdBy.toString() !== userId) {
+      return response.status(403).json({
+        success: false,
+        message: 'Cannot delete movies created by other users',
       });
     }
 

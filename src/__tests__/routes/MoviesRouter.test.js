@@ -233,7 +233,8 @@ describe('PATCH /movies/:imdbId', () => {
 describe('DELETE /movies/:imdbId', () => {
   it('should delete a users own movie when not Reel Canon', async () => {
     const user = await User.findOne({});
-    const movie = await Movie.create(movieFixture({ isReelCanon: false, createdBy: user.id }));
+
+    const movie = await Movie.create(movieFixture({ createdBy: user.id, isReelCanon: false }));
 
     const response = await request(app)
       .delete(`/movies/${movie.imdbId}`)
