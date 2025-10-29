@@ -26,7 +26,7 @@ router.post('/:recipientUserId', verifyToken, createFriendship);
 router.put('/my-friends/:requesterUserId', verifyToken, updateFriendship);
 
 // Update friendships for a specific user by userId (admin only)
-router.put('/', verifyToken, updateFriendship);
+router.put('/', verifyToken, requireAdmin, updateFriendship);
 
 // Remove an existing friendship (unfriend)
 router.delete('/my-friends/:otherUserId', verifyToken, removeFriendship);
