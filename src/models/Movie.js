@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 const movieSchema = new mongoose.Schema(
   {
@@ -49,6 +49,10 @@ const movieSchema = new mongoose.Schema(
     isReelCanon: {
       type: Boolean,
       default: false,
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
     },
   },
   {

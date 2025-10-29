@@ -88,11 +88,13 @@ export const createMovie = async (request, response, next) => {
   try {
     // Parse body for movie data
     const movieData = request.body;
+    const { userId } = request.user;
 
     // Force isReelCanon to false for user-created movies
     const sanitizedData = {
       ...movieData,
       isReelCanon: false, // Override any value from request
+      createdBy: userId,
     };
 
     // Create the movie
@@ -153,6 +155,7 @@ export const deleteMovie = async (request, response, next) => {
   try {
     // Uses the unique imdbId from the request parameters
     const { imdbId } = request.params;
+    const { userId } = request.user;
 
     // Finds the matching movie document
     const movie = await Movie.findOne({ imdbId });
@@ -172,6 +175,13 @@ export const deleteMovie = async (request, response, next) => {
       return response.status(403).json({
         success: false,
         message: 'Reel Canon movies cannot be deleted',
+      });
+    }
+
+    if (movie.createdBy.toString() !== userId) {
+      return response.status(403).json({
+        success: false,
+        message: 'Cannot delete movies created by other users',
       });
     }
 
