@@ -81,7 +81,6 @@ async function seedUsers() {
     // drop users script for dev only
     // Promise all runs in parallel, execution is not always sequential
     await Promise.all(
-      // Map the sample user data
       sampleUsers.map(async (userData) => {
         // Random amount of watched movies between 1-20 (for brevity)
         const watchedCount = Math.floor(Math.random() * 20) + 1;
@@ -95,25 +94,34 @@ async function seedUsers() {
           isWatched: true,
         }));
 
-        // Set userData for upsert:
-        const upsertData = {
-          email: userData.email,
-          password: 'StrongPassword1!',
-          reelProgress,
-          // isAdmin is either undefined and left out OR isAdmin is userData.isAdmin
-          ...(userData.isAdmin !== undefined && { isAdmin: userData.isAdmin }),
-        };
+        // Find existing user by username
+        let user = await User.findOne({ username: userData.username });
 
-        // Upsert the user (update existing, create if non existent)
-        await User.updateOne(
-          { username: userData.username },
-          {
-            $set: { ...upsertData },
-          },
-          { upsert: true },
-        );
-        // Logs per user, may be non-sequential due to parallelism
-        console.log(`Upserted user: ${userData.username}`);
+        if (user) {
+          // Update fields if user already exists
+          user.email = userData.email;
+          user.password = 'StrongPassword1!'; // pre('save') will hash
+          user.reelProgress = reelProgress;
+
+          if (userData.isAdmin !== undefined) {
+            user.isAdmin = userData.isAdmin;
+          }
+
+          await user.save();
+          console.log(`Updated user: ${user.username}`);
+        } else {
+          // Create new user
+          const newUser = new User({
+            username: userData.username,
+            email: userData.email,
+            password: 'StrongPassword1!',
+            reelProgress,
+            ...(userData.isAdmin !== undefined && { isAdmin: userData.isAdmin }),
+          });
+
+          await newUser.save();
+          console.log(`Created new user: ${userData.username}`);
+        }
       }),
     );
 
