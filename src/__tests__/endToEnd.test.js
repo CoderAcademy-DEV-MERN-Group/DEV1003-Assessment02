@@ -11,7 +11,7 @@ import {
 } from './setup/testDb';
 import User from '../models/User';
 import Movie from '../models/Movie';
-import { userFixture, movieFixture, reelProgressFixture } from './setup/fixtures';
+import { userFixture, movieFixture, reelProgressFixture, getAuthToken } from './setup/fixtures';
 // import { authenticatedRequest, adminRequest } from './setup/authHelper';
 
 // Empty variables to be assigned in beforeAll hooks
@@ -183,6 +183,26 @@ describe('Creating a new non-admin user and accessing user routes', () => {
 
 // ------------------------------------------------------------------------------------------------
 // Tests for user using friendships endpoints
+describe('Accessing friendship endpoints as a non-admin user', () => {
+  let otherUserData;
+  let otherUser;
+  let otherUserToken;
+
+  // Create another user and their token for testing
+  beforeAll(async () => {
+    otherUserData = userFixture();
+    otherUser = await User.create(otherUserData);
+    otherUserToken = { Authorization: `Bearer ${await getAuthToken(app, otherUserData)}` };
+  });
+
+  // Test sending a friend request
+  it('should allow user to send a friend request', async () => {
+    const res = await request(app)
+      .post('/friendships/request')
+      .set(userToken)
+      .send({ friendId: otherUser.id });
+    expect(res.statusCode).toBe(201);
+});
 
 // ------------------------------------------------------------------------------------------------
 // Tests for user using movies endpoints
