@@ -54,7 +54,7 @@ describe('GET /movies/search?query', () => {
       .set(authHeader) // This is where the authHelper functions are implemented
       .expect(200);
 
-    expect(response.body.movie.title).toBe(movie.title);
+    expect(response.body.movies[0].title).toBe(movie.title);
   });
 
   it('should return an array of movies if title is not unique', async () => {
@@ -78,15 +78,11 @@ describe('GET /movies/search?query', () => {
     expect(response.body.message).toBe('Access denied. No token provided.');
   });
 
-  it('should fail if the movie does not exist', async () => {
+  it('should return empty array if the movie does not exist', async () => {
     await Movie.create(movieFixture());
 
-    const response = await request(app)
-      .get('/movies/search?title=wrongtitle')
-      .set(authHeader)
-      .expect(400);
-
-    expect(response.body.message).toBe('Movie not found');
+    const response = await request(app).get('/movies/search?title=wrongtitle').set(authHeader);
+    expect(response.body.movies).toEqual([]);
   });
 
   it('should fail if the query is not title', async () => {
