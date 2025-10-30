@@ -362,7 +362,7 @@ describe('ReelProgress Routes', () => {
       });
     });
 
-    describe('DELETE /reel-progress/admin/users/:userId/movies/:movieId', () => {
+    describe('DELETE /reel-progress/admin/queries', () => {
       it('should delete any user reelProgress record when admin', async () => {
         // Create a valid movie
         const movie = await Movie.create(movieFixture());
@@ -375,7 +375,7 @@ describe('ReelProgress Routes', () => {
 
         // Admin deletes it
         const response = await request(app)
-          .delete(`/reel-progress/admin/user/${user.id}/movie/${movie.id}`)
+          .delete(`/reel-progress/admin/queries?userId=${user.id}&movieId=${movie.id}`)
           .set(adminHeader)
           .expect(200);
 
@@ -389,6 +389,50 @@ describe('ReelProgress Routes', () => {
         expect(updatedUser.reelProgress).toHaveLength(0);
       });
 
+      it('should return 400 when userId query param is missing', async () => {
+        // Create a valid movie
+        const movie = await Movie.create(movieFixture());
+
+        // Create a user with valid reelProgress
+        await User.create({
+          ...userFixture(),
+          reelProgress: reelProgressFixture(1, { movie: movie.id }),
+        });
+
+        // Admin deletes it
+        const response = await request(app)
+          .delete(`/reel-progress/admin/queries?movieId=${movie.id}`)
+          .set(adminHeader)
+          .expect(400);
+
+        expect(response.body).toMatchObject({
+          success: false,
+          message: 'Both userId and movieId query parameters required',
+        });
+      });
+
+      it('should return 400 when movieId query param is missing', async () => {
+        // Create a valid movie
+        const movie = await Movie.create(movieFixture());
+
+        // Create a user with valid reelProgress
+        const user = await User.create({
+          ...userFixture(),
+          reelProgress: reelProgressFixture(1, { movie: movie.id }),
+        });
+
+        // Admin deletes it
+        const response = await request(app)
+          .delete(`/reel-progress/admin/queries?userId=${user.id}`)
+          .set(adminHeader)
+          .expect(400);
+
+        expect(response.body).toMatchObject({
+          success: false,
+          message: 'Both userId and movieId query parameters required',
+        });
+      });
+
       it('should return 404 when user not found', async () => {
         // Create a valid movie
         const movie = await Movie.create(movieFixture());
@@ -398,7 +442,7 @@ describe('ReelProgress Routes', () => {
 
         // Admin attempts to delete random users movie
         const response = await request(app)
-          .delete(`/reel-progress/admin/user/${fakeUserId}/movie/${movie.id}`)
+          .delete(`/reel-progress/admin/queries?userId=${fakeUserId}&movieId=${movie.id}`)
           .set(adminHeader)
           .expect(404);
 
@@ -417,7 +461,7 @@ describe('ReelProgress Routes', () => {
 
         // Admin attempts to delete movie not in user's reelProgress
         const response = await request(app)
-          .delete(`/reel-progress/admin/user/${user.id}/movie/${fakeMovieId}`)
+          .delete(`/reel-progress/admin/queries?userId=${user.id}&movieId=${fakeMovieId}`)
           .set(adminHeader)
           .expect(404);
 
@@ -438,7 +482,7 @@ describe('ReelProgress Routes', () => {
 
         // Set to non admin user
         const response = await request(app)
-          .delete(`/reel-progress/admin/user/${user.id}/movie/${movie.id}`)
+          .delete(`/reel-progress/admin/queries?userId=${user.id}&movieId=${movie.id}`)
           .set(authHeader)
           .expect(403);
 
