@@ -19,6 +19,9 @@ export const getLeaderboard = async (req, response, next) => {
     // Use aggregate function to group by user
     const reelProgressData = await User.aggregate([
       {
+        $match: { reelProgress: { $exists: true, $ne: [] } },
+      },
+      {
         $group: {
           // Groups using username as ID
           _id: '$username',
@@ -30,10 +33,12 @@ export const getLeaderboard = async (req, response, next) => {
       { $sort: { reelProgressCount: -1 } },
     ]);
 
-    // IF statement goes here
-
     return response.status(200).json({
       success: true, // expect response.body.succuess toBe true
+      message:
+        reelProgressData.length === 0
+          ? 'Leaderboard is empty - no users with reel progress yet'
+          : `Found ${reelProgressData.length} users with Reel Progress`,
       data: reelProgressData, // expect response.body.data.length > 0 / or has this property
       updatedAt: now, // expect response.body toHaveProperty updatedAt
     });
