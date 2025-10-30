@@ -411,7 +411,7 @@ it('should prevent non-admin user from accessing admin only reel progress routes
   let res = await request(app).get('/reel-progress/admin/').set(userToken);
   expect(res.statusCode).toBe(403);
   res = await request(app)
-    .delete(`/reel-progress/admin/user/${user.id}/movie/${reelCanon[0].id}`)
+    .delete(`/reel-progress/admin/queries?userId=${user.id}&movieId=${reelCanon[0].id}`)
     .set(userToken);
   expect(res.statusCode).toBe(403);
 });
@@ -571,7 +571,7 @@ describe('Accessing reel canon admin endpoints as an admin user', () => {
     );
     // Delete the reel progress as admin
     const res = await request(app)
-      .delete(`/reel-progress/admin/user/${otherUser.id}/movie/${reelToDelete.id}`)
+      .delete(`/reel-progress/admin/queries?userId=${otherUser.id}&movieId=${reelToDelete.id}`)
       .set(adminToken);
     expect(res.statusCode).toBe(200);
     expect(res.body).toMatchObject({
