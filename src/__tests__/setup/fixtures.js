@@ -55,3 +55,17 @@ export const reelProgressFixture = (count = 1, overrides = {}) => {
     ...overrides,
   }));
 };
+
+// Alternative version if you want more control over each user's reelProgress count
+export const usersWithReelProgressFixture = (
+  userReelProgressCount = [
+    { reelProgressCount: 5 },
+    { reelProgressCount: 3 },
+    { reelProgressCount: 8 },
+  ],
+) => {
+  return userReelProgressCount.map((config) => {
+    const reelProgress = reelProgressFixture(config.reelProgressCount);
+    return userFixture({ reelProgress });
+  });
+};
