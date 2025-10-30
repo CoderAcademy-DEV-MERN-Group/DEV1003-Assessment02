@@ -28,7 +28,7 @@ describe('GET /leaderboard', () => {
     const response = await request(app).get('/leaderboard').expect(200);
 
     expect(response.body.success).toBe(true); // Check success is true
-    expect(response.body.data).toHaveLength(3); // Check that the correct amount of users are found
+    expect(response.body.reelProgressData).toHaveLength(3); // Check that the correct amount of users are found
     expect(response.body.message).toBe('Found 3 users with Reel Progress'); // Check correct message is sent in response
   });
   it('should return updatedAt with valid date', async () => {
@@ -51,7 +51,7 @@ describe('GET /leaderboard', () => {
     const response = await request(app).get('/leaderboard').expect(200);
 
     // map the user reelProgress counts to an array (should be ordered already)
-    const counts = response.body.data.map((user) => user.reelProgressCount);
+    const counts = response.body.reelProgressData.map((user) => user.reelProgressCount);
 
     expect(counts).toEqual([8, 5, 3]); // Expect results to be in correct order
   });
@@ -61,6 +61,10 @@ describe('GET /leaderboard', () => {
 
     const response = await request(app).get('/leaderboard').expect(200);
 
-    expect(response.body.message).toBe('Leaderboard is empty - no users ith reel progress yet');
+    expect(response.body.message).toBe('Leaderboard is empty - no users with reel progress yet');
+  });
+  it('should return an empty array if no users exist', async () => {
+    const response = await request(app).get('/leaderboard').expect(200);
+    expect(response.body.reelProgressData).toStrictEqual([]);
   });
 });
