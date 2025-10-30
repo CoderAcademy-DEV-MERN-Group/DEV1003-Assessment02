@@ -39,7 +39,7 @@ export const getLeaderboard = async (req, response, next) => {
         reelProgressData.length === 0
           ? 'Leaderboard is empty - no users with reel progress yet'
           : `Found ${reelProgressData.length} users with Reel Progress`,
-      data: reelProgressData, // expect response.body.data.length > 0 / or has this property
+      reelProgressData, // expect response.body.data.length > 0 / or has this property
       updatedAt: now, // expect response.body toHaveProperty updatedAt
     });
   } catch (error) {
