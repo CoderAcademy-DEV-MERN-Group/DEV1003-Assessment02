@@ -61,9 +61,6 @@ async function seedDatabase() {
 
     console.log('Connected to MongoDB!');
 
-    await Movie.deleteMany({});
-    console.log('Clearing existing movies...');
-
     const movieEntries = Object.entries(moviesList);
     console.log(`Seeding ${movieEntries.length} movies...`);
 
