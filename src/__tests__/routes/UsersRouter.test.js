@@ -36,10 +36,10 @@ describe('GET /users endpoint works correctly', () => {
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
-      data: { users: expect.any(Array) },
+      users: expect.any(Array),
     });
     // 5 created + 1 each for authHeader and adminHeader in beforeEach
-    expect(res.body.data.users.length).toBe(7);
+    expect(res.body.users.length).toBe(7);
   });
   // Test that non admin cannot access endpoint
   it('should return 403 and message if non-admin tries to access', async () => {
@@ -231,6 +231,9 @@ describe('PUT /users/my-profile/update-password endpoint works correctly', () =>
       success: true,
       message: 'Password updated successfully',
     });
+    const user = await User.findOne({ email: userData.email }).exec();
+    // Verify password is actually updated (hashed, so shouldn't match plain text)
+    expect(user.password).not.toBe('Newpassword1!');
   });
   // Test for admin successfully updating another user's password (commented out for future discussion)
   // it("should allow admin to update another user's password", async () => {

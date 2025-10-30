@@ -16,7 +16,7 @@ export const getAllUsers = async (req, res, next) => {
     }
     return res.status(200).json({
       success: true,
-      data: { users },
+      users,
     });
   } catch (error) {
     return next(error);
@@ -135,9 +135,9 @@ export const deleteUserProfile = async (req, res, next) => {
   try {
     const userId = req.params.userId || req.user.userId;
     // Fetch user or return 404 if not found
-    const user = await User.findByIdAndDelete(userId).exec();
+    const deletedUser = await User.findByIdAndDelete(userId).exec();
     // If user not found, getUserOr404 already sent 404 response, so exit early
-    if (!user) {
+    if (!deletedUser) {
       return res.status(404).json({
         success: false,
         message: 'User not found',
@@ -148,6 +148,7 @@ export const deleteUserProfile = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: 'User profile deleted successfully',
+      deletedUser,
     });
   } catch (error) {
     return next(error);
