@@ -5,6 +5,7 @@ import { movieFixture } from '../setup/fixtures';
 import { app } from '../../server';
 import Movie from '../../models/Movie';
 import { adminRequest, authenticatedRequest } from '../setup/authHelper';
+import User from '../../models/User';
 
 // set up empty variables to be assigned in beforeAll hooks
 let authHeader;
@@ -117,6 +118,20 @@ describe('POST /movies/', () => {
     });
   });
 
+  it('should add a createdBy field with current user', async () => {
+    const user = await User.findOne({});
+    const movieData = movieFixture({ createdBy: user.id });
+
+    const response = await request(app)
+      .post('/movies/')
+      .set(authHeader)
+      .send(movieData)
+      .expect(201);
+
+    // Check that the response includes createdBy
+    expect(response.body.movie.createdBy).toBe(user.id);
+  });
+
   it('should always create movie with isReelCanon false', async () => {
     const movieData = movieFixture({ isReelCanon: true }); // Try to set as Reel Canon
 
@@ -212,8 +227,10 @@ describe('PATCH /movies/:imdbId', () => {
   });
 });
 describe('DELETE /movies/:imdbId', () => {
-  it('should delete a movie whe not Reel Canon', async () => {
-    const movie = await Movie.create(movieFixture({ isReelCanon: false }));
+  it('should delete a users own movie when not Reel Canon', async () => {
+    const user = await User.findOne({});
+
+    const movie = await Movie.create(movieFixture({ createdBy: user.id, isReelCanon: false }));
 
     const response = await request(app)
       .delete(`/movies/${movie.imdbId}`)

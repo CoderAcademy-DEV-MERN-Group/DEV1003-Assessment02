@@ -176,8 +176,11 @@ npm install
 - `npm test` - Run test suite
 - `npm run test:watch` - Run tests in watch mode
 - `npm run test:coverage` - Run tests with coverage reporting
+- `npm run seed:users` - Seed local database with user data
+- `npm run drop:users` - Drop ONLY local database user records
 - `npm run seed:movies` - Seed local database with movie data
 - `npm run seed:movies:deployed` - Seed production database
+- `npm run seed:users:deployed` - Seed production database
 - `npm run lint` - Check code for style issues
 - `npm run lint-fix` - Automatically fix linting errors
 - `npm run format` - Format code with Prettier
