@@ -362,7 +362,7 @@ describe('ReelProgress Routes', () => {
       });
     });
 
-    describe('DELETE /reel-progress/admin/users/:userId/movies/:movieId', () => {
+    describe('DELETE /reel-progress/admin/queries', () => {
       it('should delete any user reelProgress record when admin', async () => {
         // Create a valid movie
         const movie = await Movie.create(movieFixture());
@@ -375,7 +375,7 @@ describe('ReelProgress Routes', () => {
 
         // Admin deletes it
         const response = await request(app)
-          .delete(`/reel-progress/admin/user/${user.id}/movie/${movie.id}`)
+          .delete(`/reel-progress/admin/queries?userId=${user.id}&movieId=${movie.id}`)
           .set(adminHeader)
           .expect(200);
 
@@ -398,7 +398,7 @@ describe('ReelProgress Routes', () => {
 
         // Admin attempts to delete random users movie
         const response = await request(app)
-          .delete(`/reel-progress/admin/user/${fakeUserId}/movie/${movie.id}`)
+          .delete(`/reel-progress/admin/queries?userId=${fakeUserId}&movieId=${movie.id}`)
           .set(adminHeader)
           .expect(404);
 
@@ -417,7 +417,7 @@ describe('ReelProgress Routes', () => {
 
         // Admin attempts to delete movie not in user's reelProgress
         const response = await request(app)
-          .delete(`/reel-progress/admin/user/${user.id}/movie/${fakeMovieId}`)
+          .delete(`/reel-progress/admin/queries?userId=${user.id}&movieId=${fakeMovieId}`)
           .set(adminHeader)
           .expect(404);
 
@@ -438,7 +438,7 @@ describe('ReelProgress Routes', () => {
 
         // Set to non admin user
         const response = await request(app)
-          .delete(`/reel-progress/admin/user/${user.id}/movie/${movie.id}`)
+          .delete(`/reel-progress/admin/queries?userId=${user.id}&movieId=${movie.id}`)
           .set(authHeader)
           .expect(403);
 

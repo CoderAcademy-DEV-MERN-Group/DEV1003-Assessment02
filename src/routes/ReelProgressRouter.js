@@ -20,11 +20,6 @@ router.delete('/:movieId', verifyToken, deleteReelProgress);
 
 // Admin authorized routes
 router.get('/admin/', verifyToken, requireAdmin, adminGetAllReels);
-router.delete(
-  '/admin/user/:userId/movie/:movieId',
-  verifyToken,
-  requireAdmin,
-  adminDeleteReelProgress,
-);
+router.delete('/admin/queries', verifyToken, requireAdmin, adminDeleteReelProgress);
 
 export default router;

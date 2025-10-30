@@ -232,7 +232,15 @@ export const adminGetAllReels = async (request, response, next) => {
 export const adminDeleteReelProgress = async (request, response, next) => {
   try {
     // Get userId and movieID from request params
-    const { userId, movieId } = request.params;
+    const { userId, movieId } = request.query;
+
+    // Check both query params are received in request
+    if (!userId || !movieId) {
+      return response.status(400).json({
+        success: false,
+        message: 'Both userId and movieId query parameters required',
+      });
+    }
 
     // Check if user exists first
     const user = await User.findById(userId);
