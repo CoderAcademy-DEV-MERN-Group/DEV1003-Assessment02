@@ -389,6 +389,50 @@ describe('ReelProgress Routes', () => {
         expect(updatedUser.reelProgress).toHaveLength(0);
       });
 
+      it('should return 400 when userId query param is missing', async () => {
+        // Create a valid movie
+        const movie = await Movie.create(movieFixture());
+
+        // Create a user with valid reelProgress
+        await User.create({
+          ...userFixture(),
+          reelProgress: reelProgressFixture(1, { movie: movie.id }),
+        });
+
+        // Admin deletes it
+        const response = await request(app)
+          .delete(`/reel-progress/admin/queries?movieId=${movie.id}`)
+          .set(adminHeader)
+          .expect(400);
+
+        expect(response.body).toMatchObject({
+          success: false,
+          message: 'Both userId and movieId query parameters required',
+        });
+      });
+
+      it('should return 400 when movieId query param is missing', async () => {
+        // Create a valid movie
+        const movie = await Movie.create(movieFixture());
+
+        // Create a user with valid reelProgress
+        const user = await User.create({
+          ...userFixture(),
+          reelProgress: reelProgressFixture(1, { movie: movie.id }),
+        });
+
+        // Admin deletes it
+        const response = await request(app)
+          .delete(`/reel-progress/admin/queries?userId=${user.id}`)
+          .set(adminHeader)
+          .expect(400);
+
+        expect(response.body).toMatchObject({
+          success: false,
+          message: 'Both userId and movieId query parameters required',
+        });
+      });
+
       it('should return 404 when user not found', async () => {
         // Create a valid movie
         const movie = await Movie.create(movieFixture());
