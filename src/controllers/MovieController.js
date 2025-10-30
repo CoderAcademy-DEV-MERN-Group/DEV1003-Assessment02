@@ -7,7 +7,10 @@ export const getReelCanon = async (request, response, next) => {
   try {
     // Find all movies with isReelCanon
     const movies = await Movie.find({ isReelCanon: true });
-    return response.json(movies);
+    return response.status(200).json({
+      success: true,
+      movies,
+    });
     // Pass errors to the error handler
   } catch (error) {
     return next(error);
@@ -55,27 +58,28 @@ export const searchMovie = async (request, response, next) => {
     // Find movie\s with that title
     const movies = await Movie.find({ title });
 
-    // If no movies are found:
-    if (movies.length === 0) {
-      return response.status(400).json({
-        success: false,
-        message: 'Movie not found',
-      });
-    }
+    // // If no movies are found:
+    // if (movies.length === 0) {
+    //   return response.status(400).json({
+    //     success: false,
+    //     message: 'Movie not found',
+    //   });
+    // }
 
-    // If only one movie is found:
-    if (movies.length === 1) {
-      return response.status(200).json({
-        success: true,
-        message: 'Movie found',
-        movie: movies[0],
-      });
-    }
+    // // If only one movie is found:
+    // if (movies.length === 1) {
+    //   return response.status(200).json({
+    //     success: true,
+    //     message: 'Movie found',
+    //     movie: movies[0],
+    //   });
+    // }
 
     // If movie length is over 1 (same title, different movies):
     return response.status(200).json({
       success: true,
-      message: `Found ${movies.length} movies with title "${title}"`,
+      // message: `Found ${movies.length} movies with title "${title}"`,
+      message: `Found ${movies.length} movie${movies.length === 1 ? '' : 's'} with title "${title}"`,
       movies,
     });
   } catch (error) {
@@ -186,11 +190,12 @@ export const deleteMovie = async (request, response, next) => {
     }
 
     // find the movie and delete if it passes all requirements
-    await Movie.findOneAndDelete({ imdbId });
+    const deletedMovie = await Movie.findOneAndDelete({ imdbId });
 
     return response.status(200).json({
       success: true,
       message: 'Movie deleted successfully',
+      deletedMovie,
     });
     // Pass any errors to the error handler
   } catch (error) {
