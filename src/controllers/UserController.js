@@ -154,3 +154,5 @@ export const deleteUserProfile = async (req, res, next) => {
     return next(error);
   }
 };
+
+// Get route for user by name query

@@ -103,6 +103,17 @@ describe('Creating a new non-admin user and accessing user routes', () => {
     });
   });
 
+  // Test user can access get all users route
+  it('should allow user to get all users', async () => {
+    const res = await request(app).get('/users').set(userToken);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toMatchObject({
+      success: true,
+      users: expect.any(Array),
+    });
+    expect(res.body.users.length).toBe(1); // Only one user (self) in database at this point
+  });
+
   // Test user can update their profile
   it('should allow user to update their profile', async () => {
     const updatedData = {
@@ -152,11 +163,8 @@ describe('Creating a new non-admin user and accessing user routes', () => {
 
   // Test user cannot access admin protected routes
   it('should prevent non-admin user from accessing admin routes', async () => {
-    // Check 'get all' users route
-    let res = await request(app).get('/users').set(userToken);
-    expect(res.statusCode).toBe(403);
     // Check 'get user by ID' route
-    res = await request(app).get(`/users/${user.id}`).set(userToken);
+    let res = await request(app).get(`/users/${user.id}`).set(userToken);
     expect(res.statusCode).toBe(403);
     // Check 'update user by ID' route
     const username = 'ImAHacker';
@@ -479,17 +487,6 @@ describe('Creating and using an admin user for admin endpoints', () => {
     expect(adminUser.isAdmin).toBe(true);
     // Assign token for use in later tests
     adminToken = { Authorization: `Bearer ${res.body.token}` };
-  });
-
-  // Test admin can access get all users route
-  it('should allow admin to get all users', async () => {
-    const res = await request(app).get('/users').set(adminToken);
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toMatchObject({
-      success: true,
-      users: expect.any(Array),
-    });
-    expect(res.body.users.length).toBe(2); // Other user still in DB from friendship tests
   });
 
   // Test admin can access get user by ID route

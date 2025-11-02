@@ -12,13 +12,16 @@ import { verifyToken, requireAdmin } from '../utils/auth';
 const router = Router();
 
 // Get all users (admin only)
-router.get('/', verifyToken, requireAdmin, getAllUsers);
+router.get('/', verifyToken, getAllUsers);
 
 // Get current user profile
 router.get('/my-profile', verifyToken, getUserProfile);
 
 // Get user profile by ID (for viewing other users' profiles)
 router.get('/:userId', verifyToken, requireAdmin, getUserProfile);
+
+// // Add get user(s) by username query
+// router.get('/username/', verifyToken, getUserProfileByName);
 
 // Update current user profile
 router.put('/my-profile', verifyToken, updateUserProfile);
