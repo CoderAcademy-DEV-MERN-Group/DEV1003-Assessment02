@@ -4,7 +4,7 @@ import User from '../models/User';
 // import Friendship from '../models/Friendship';
 // import { getUserOr404 } from '../utils/userHelperFunctions';
 
-// Get all users (admin only)
+// Get all users
 export const getAllUsers = async (req, res, next) => {
   try {
     const users = await User.find().select('-password').exec();

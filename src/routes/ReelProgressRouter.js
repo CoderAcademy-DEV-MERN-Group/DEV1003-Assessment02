@@ -30,6 +30,8 @@ router.delete('/:movieId', verifyToken, deleteReelProgress);
 
 // Get all reel progress records of all users (admin)
 router.get('/admin/', verifyToken, requireAdmin, adminGetAllReels);
+
+// Delete reel progress records by query (admin)
 router.delete('/admin/queries', verifyToken, requireAdmin, adminDeleteReelProgress);
 
 export default router;
