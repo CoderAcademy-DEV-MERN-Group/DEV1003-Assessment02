@@ -4,5 +4,5 @@
     "source.fixAll.eslint": "explicit"
   },
   "editor.formatOnSave": true,
-  "cSpell.words": ["imdb", "OMDB", "teardown"]
+  "cSpell.words": ["defense", "Firestore", "imdb", "MERN", "mongosh", "OMDB", "Ryzen", "teardown"]
 }

@@ -46,23 +46,38 @@ describe('Empty and Invalid Server Endpoints Work', () => {
 });
 
 // Tests for health endpoint. Only basic tests, database connection tests will be in databaseHealth.test.js
-describe('Health Check Endpoint Works', () => {
-  let res;
-  beforeAll(async () => {
-    res = await request(app).get('/database-health');
-  });
-
-  it('should return 200 for GET /database-health', async () => {
+describe('Health Check Endpoint Works in Test and Development Environment Only', () => {
+  // Test in test environment
+  it('should return 200 and correct json properties in test environment', async () => {
+    const res = await request(app).get('/database-health');
     expect(res.statusCode).toBe(200);
+    const properties = ['readyState', 'dbName', 'dbModels', 'dbHost', 'dbPort', 'dbUser'];
+    properties.forEach((prop) => {
+      expect(res.body).toHaveProperty(prop);
+    });
   });
 
-  const properties = ['readyState', 'dbName', 'dbModels', 'dbHost', 'dbPort', 'dbUser'];
-  it.each(properties)(`should have %s in response body`, (prop) => {
-    expect(res.body).toHaveProperty(prop);
+  it('should return 200 in development environment', async () => {
+    process.env.NODE_ENV = 'development';
+    // Reset cache so we can reload with dev database
+    jest.resetModules();
+    const { app: devApp, connectToDatabase, databaseURL } = await import('../server');
+    const { databaseDisconnector } = await import('../config/database');
+    await connectToDatabase(databaseURL);
+    const res = await request(devApp).get('/database-health');
+    expect(res.statusCode).toBe(200);
+    await databaseDisconnector();
+    process.env.NODE_ENV = 'test';
   });
 
-  it('should return a number for readyState', () => {
-    expect(typeof res.body.readyState).toBe('number');
+  // Simulate production environment
+  it('should return 404 in production environment', async () => {
+    process.env.NODE_ENV = 'production';
+    jest.resetModules();
+    const { app: prodApp } = await import('../server');
+    const res = await request(prodApp).get('/database-health');
+    expect(res.statusCode).toBe(404);
+    process.env.NODE_ENV = 'test';
   });
 });
 

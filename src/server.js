@@ -90,31 +90,38 @@ async function connectToDatabase(uri) {
   }
 }
 
-/* Return useful details from the database connection, properties here:
-https://mongoosejs.com/docs/api/connection.html */
-app.get('/database-health', (req, res) => {
-  // Return object with details about current database connection
+/* Route to return useful details from the database connection, properties here:
+https://mongoosejs.com/docs/api/connection.html 
+(will only be available in development and test environments)
+DO NOT USE IN PRODUCTION - EXPOSES SENSITIVE DATA TO CLIENT!!! */
+if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
+  app.get('/database-health', (req, res) => {
+    // Return object with details about current database connection
+    res.json({
+      // Shows current connection status to MongoDB
+      // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+      readyState: mongoose.connection.readyState,
+      // Name of the current database being used
+      dbName: mongoose.connection.name,
+      // Array of all model names registered with current connection
+      dbModels: mongoose.connection.modelNames(),
+      // Database connection string host (IP address or domain name)
+      dbHost: mongoose.connection.host,
+      // The port MongoDB is running on
+      dbPort: mongoose.connection.port,
+      // The username used to connect to the database (null if none)
+      dbUser: mongoose.connection.user || null,
+    });
+  });
+}
+
+// Add basic landing page message
+app.get('/', (req, res) => {
   res.json({
-    // Shows current connection status to MongoDB
-    // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
-    readyState: mongoose.connection.readyState,
-    // Name of the current database being used
-    dbName: mongoose.connection.name,
-    // Array of all model names registered with current connection
-    dbModels: mongoose.connection.modelNames(),
-    // Database connection string host (IP address or domain name)
-    dbHost: mongoose.connection.host,
-    // The port MongoDB is running on
-    dbPort: mongoose.connection.port,
-    // The username used to connect to the database (null if none)
-    dbUser: mongoose.connection.user || null,
+    message: 'Welcome to the reel-canon API! Refer to docs/USAGE.md for API endpoint details.',
   });
 });
 
-// Add basic test route
-app.get('/', (req, res) => {
-  res.json({ message: 'Hello World!' });
-});
 // Add post route to echo sent data
 app.post('/echo', (req, res) => {
   res.json({ receivedData: req.body });
