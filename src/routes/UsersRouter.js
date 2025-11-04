@@ -11,7 +11,7 @@ import { verifyToken, requireAdmin } from '../utils/auth';
 
 const router = Router();
 
-// Get all users (admin only)
+// Get all users
 router.get('/', verifyToken, getAllUsers);
 
 // Get current user profile
