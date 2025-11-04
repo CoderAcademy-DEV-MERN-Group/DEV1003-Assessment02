@@ -64,6 +64,30 @@ Below is a list of future plans for improving functionality and features of this
 - Basic friend system
 - Leaderboard
 
+**Examples:**
+
+**The full reel canon** is able to be seeded to the chosen database, and a get route created to send all movie data to the client.
+
+_Figure 1: GET /movies/reel-canon_
+![GET movies/reel-canon/ presents the entire 100 movie list to the user](./docs/images/GET%20reel-canon.png)
+
+**A user seeding script** creates users with reelProgress, ensuring data to manage front end state, and to calculate leaderboard standing are correct and accessible.
+
+_Figure 2: GET /leaderboard_
+![GET /leaderboard presents all users who have watched movies ranked from highest watched to lowest](./docs/images/GET%20Leaderboard.png)
+
+**Login route for authorisation** has been fully completed, and ensures users with incorrect details or non-existent accounts receive a generic ambiguous message for added account protection.
+
+_Figure 3: POST /auth/login_
+![POST /auth/login accepts email and password, accepts valid users and returns JSON web token, invalid users are blocked](./docs/images/POST%20login.png)
+
+**Register route for new users** has been fully completed, with validation for password complexity, pre save password hashing, and query level protection from accidental password exposure.
+
+_Figure 4: POST /auth/register: Token obscured for data security purposes_
+![POST /auth/register accepts username email and password, valid data returns success and a JSON web token, obscured in this image for data security](./docs/images/POST%20register.png)
+
+---
+
 **Planned Releases:**
 
 **V.0.2.0** - Custom lists
