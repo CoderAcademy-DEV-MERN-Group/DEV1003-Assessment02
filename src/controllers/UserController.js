@@ -90,7 +90,7 @@ export const updateUserPassword = async (req, res, next) => {
     if (!req.user.isAdmin) {
       const validPassword = await bcrypt.compare(req.body.currentPassword, user.password);
       if (!validPassword) {
-        return res.status(401).json({
+        return res.status(403).json({
           success: false,
           message: 'Invalid current password',
         });
