@@ -41,8 +41,7 @@ router.post('/login', validateLogin, async (request, response, next) => {
     if (!user) {
       return response.status(401).json({
         success: false,
-        message: 'Authentication failed',
-        errors: ['Incorrect email or password'],
+        message: 'Authentication failed: Incorrect email or password',
       });
     }
 
@@ -50,8 +49,7 @@ router.post('/login', validateLogin, async (request, response, next) => {
     if (!isPasswordValid) {
       return response.status(401).json({
         success: false,
-        message: 'Authentication failed',
-        errors: ['Incorrect email or password'],
+        message: 'Authentication failed: Incorrect email or password',
       });
     }
 
