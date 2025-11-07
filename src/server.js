@@ -14,9 +14,7 @@ import {
   AuthRouter,
   FriendshipRouter,
   LeaderboardRouter,
-  ListsRouter,
   MoviesRouter,
-  RatingsRouter,
   UsersRouter,
   ReelProgressRouter,
 } from './routes/index';
@@ -61,9 +59,7 @@ const PORT = process.env.PORT || 3000;
 app.use('/auth', AuthRouter);
 app.use('/friendships', FriendshipRouter);
 app.use('/leaderboard', LeaderboardRouter);
-app.use('/lists', ListsRouter);
 app.use('/movies', MoviesRouter);
-app.use('/ratings', RatingsRouter);
 app.use('/users', UsersRouter);
 app.use('/reel-progress', ReelProgressRouter);
 

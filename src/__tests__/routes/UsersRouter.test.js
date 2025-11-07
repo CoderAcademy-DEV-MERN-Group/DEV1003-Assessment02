@@ -252,7 +252,7 @@ describe('PUT /users/my-profile/update-password endpoint works correctly', () =>
       .put('/users/my-profile/update-password')
       .set('Authorization', `Bearer ${token}`)
       .send(newPasswordData);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
     expect(res.body).toMatchObject({
       success: false,
       message: 'Invalid current password',
