@@ -39,7 +39,7 @@ export const getUserProfile = async (req, res, next) => {
     // Return success message with user data
     return res.status(200).json({
       success: true,
-      data: { user },
+      user,
     });
     // Catch errors and pass to error handling middleware (in server.js)
   } catch (error) {
@@ -68,7 +68,7 @@ export const updateUserProfile = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      data: { user },
+      user,
     });
   } catch (error) {
     return next(error);
