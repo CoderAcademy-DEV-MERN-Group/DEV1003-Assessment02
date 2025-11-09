@@ -84,12 +84,10 @@ describe('Creating a new non-admin user and accessing user routes', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
-      data: {
-        user: {
-          username: user.username,
-          email: user.email,
-          isAdmin: false,
-        },
+      user: {
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
       },
     });
   });
@@ -124,11 +122,9 @@ describe('Creating a new non-admin user and accessing user routes', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
-      data: {
-        user: {
-          username: updatedData.username,
-          email: updatedData.email,
-        },
+      user: {
+        username: updatedData.username,
+        email: updatedData.email,
       },
     });
     // Verify changes in database
@@ -448,7 +444,7 @@ describe('Deleting own profile as a non-admin user', () => {
     expect(res.statusCode).toBe(401);
     expect(res.body).toMatchObject({
       success: false,
-      message: 'Authentication failed',
+      message: 'Authentication failed: Incorrect email or password',
     });
   });
 
@@ -495,9 +491,7 @@ describe('Creating and using an admin user for admin endpoints', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
-      data: {
-        user: expect.objectContaining({ email: otherUser.email }),
-      },
+      user: expect.objectContaining({ email: otherUser.email }),
     });
   });
 
@@ -508,9 +502,7 @@ describe('Creating and using an admin user for admin endpoints', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
-      data: {
-        user: expect.objectContaining({ username: updatedData.username }),
-      },
+      user: expect.objectContaining({ username: updatedData.username }),
     });
     // Verify changes in database
     const updatedUser = await User.findById(otherUser.id);
@@ -620,7 +612,7 @@ describe('Deleting own profile as an admin user', () => {
     expect(res.statusCode).toBe(401);
     expect(res.body).toMatchObject({
       success: false,
-      message: 'Authentication failed',
+      message: 'Authentication failed: Incorrect email or password',
     });
   });
 

@@ -54,13 +54,11 @@ describe('GET /users/:userID endpoint works correctly', () => {
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
-      data: {
-        user: {
-          _id: user.id,
-          username: user.username,
-          email: user.email,
-          isAdmin: false,
-        },
+      user: {
+        _id: user.id,
+        username: user.username,
+        email: user.email,
+        isAdmin: false,
       },
     });
   });
@@ -99,14 +97,12 @@ describe('GET /users/my-profile endpoint works correctly', () => {
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
-      data: {
-        user: {
-          _id: createdUser.id,
-          username: userData.username,
-          email: userData.email,
-          isAdmin: false,
-          reelProgress: [],
-        },
+      user: {
+        _id: createdUser.id,
+        username: userData.username,
+        email: userData.email,
+        isAdmin: false,
+        reelProgress: [],
       },
     });
   });
@@ -150,12 +146,10 @@ describe('PUT /users/my-profile endpoint works correctly', () => {
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       success: true,
-      data: {
-        user: {
-          _id: user.id,
-          username: updatedData.username,
-          email: updatedData.email,
-        },
+      user: {
+        _id: user.id,
+        username: updatedData.username,
+        email: updatedData.email,
       },
     });
   });
@@ -181,7 +175,7 @@ describe('PUT /users/:userId endpoint works correctly', () => {
     // Call put request to update other user's profile using userId param
     const res = await request(app).put(`/users/${user.id}`).set(adminHeader).send(updatedData);
     expect(res.status).toBe(200);
-    expect(res.body.data.user).toMatchObject({
+    expect(res.body.user).toMatchObject({
       _id: user.id,
       username: updatedData.username,
     });

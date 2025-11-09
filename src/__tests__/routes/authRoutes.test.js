@@ -109,8 +109,7 @@ describe('POST /auth/login', () => {
 
     expect(response.body).toEqual({
       success: false,
-      message: 'Authentication failed',
-      errors: ['Incorrect email or password'],
+      message: 'Authentication failed: Incorrect email or password',
     });
   });
 
@@ -123,7 +122,7 @@ describe('POST /auth/login', () => {
       })
       .expect(401);
 
-    expect(response.body.errors).toContain('Incorrect email or password');
+    expect(response.body.message).toContain('Incorrect email or password');
   });
 
   it('should reject login with missing email', async () => {
