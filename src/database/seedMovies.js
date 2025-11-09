@@ -35,6 +35,7 @@ async function getMovieMetadata(imdbId) {
       actors: data.Actors ? data.Actors.split(', ').map((act) => act.trim()) : [],
       imdbId,
       poster: data.Poster,
+      isReelCanon: true, // All seeded movies are part of the reel canon
     };
   } catch (error) {
     console.log(`Failed to fetch ${imdbId}: `, error.message);
