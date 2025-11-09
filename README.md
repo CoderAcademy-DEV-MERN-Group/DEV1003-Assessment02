@@ -10,7 +10,8 @@
 2. [Programming Style Guide](#2-programming-style-guide)
 3. [Contributing](#3-contributing)
 4. [Version Pipeline](#4-version-pipeline)
-5. [Contributors](#5-contributors)
+5. [Database Deployment](#5-database-deployment)
+6. [Contributors](#6-contributors)
 
 ### Other Documents
 
@@ -124,7 +125,17 @@ _Figure 4: POST /auth/register: Token obscured for data security purposes_
 
 ---
 
-## 5. Contributors
+## 7. Database Deployment
+
+**Evidence of deployment of database to Mongo Atlas:**
+![Reel Canon cluster in Mongo Atlas](./docs/images/MongoCluster.png)
+
+**Example of seeded movie in deployed Mongo Atlas database:**
+![Seeded movie in Mongo Atlas](./docs/images/SeededMovie.png)
+
+---
+
+## 6. Contributors
 
 - **Joss Raine:** [Joss's GitHub Repository](https://github.com/truth-josstice)
 - **Nhi Huynh:** [Nhi's Github Repository](https://github.com/lulu-codes)
