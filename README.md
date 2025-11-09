@@ -87,6 +87,11 @@ _Figure 3: POST /auth/login_
 _Figure 4: POST /auth/register: Token obscured for data security purposes_
 ![POST /auth/register accepts username email and password, valid data returns success and a JSON web token, obscured in this image for data security](./docs/images/POST%20register.png)
 
+**MongoDB Cloud Atlas** has deployed database with the core data of reelCanon already set up. Test users have also been seeded to the database for full functionality of responses to the client.
+
+_Figure 5: MongoDB Cloud Atlas database_
+![MongoDB Cloud Atlas hosts our database for deployment](./docs/images/mongo-db-deployment.png)
+
 ---
 
 **Planned Releases:**
