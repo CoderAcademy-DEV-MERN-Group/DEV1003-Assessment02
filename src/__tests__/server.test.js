@@ -117,7 +117,7 @@ describe('Middleware is configured correctly', () => {
   });
 
   // Test CORS allows requests from allowed origins. Replace 'deployedApp' with actual front end
-  const allowedOrigins = ['http://localhost:5000', 'https://deployedApp.com'];
+  const allowedOrigins = ['http://localhost:5000', 'https://the-reel-canon.netlify.app'];
   it.each(allowedOrigins)('should allow CORS requests from %s', async (origin) => {
     const res = await request(app).get('/').set('Origin', origin);
     expect(res.headers['access-control-allow-origin']).toBe(origin);
