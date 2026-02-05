@@ -1,6 +1,6 @@
 # Installation and Deployment
 
-Below are the installation instructions to setup and deploy this API either locally or hosted via cloud. Refer to the [requirements section](/README.md#technology-stack) in the README for pre-requisites.
+Below are the installation instructions to setup and deploy this API either locally or hosted via cloud. Refer to the [requirements section](./README.md#technology-stack) in the README for pre-requisites.
 
 ## Contents
 
@@ -71,7 +71,7 @@ Below are the installation instructions to setup and deploy this API either loca
    npm run dev  # Starts development server with hot reload
    ```
 
-   Server will run at `http://localhost:3000` by default
+   Server will run at `http://localhost:5000` by default
 
 8. Deploy Online - Skip If Deploying Locally Only
    - Sign up at [Render](https://render.com/) or [Railway](https://railway.app/)
@@ -185,7 +185,7 @@ Below are the installation instructions to setup and deploy this API either loca
    npm run dev
    ```
 
-   Server will run at `http://localhost:3000` by default
+   Server will run at `http://localhost:5000` by default
 
 8. Deploy Online - Skip If Deploying Locally Only
    - Sign up at [Render](https://render.com/) or [Railway](https://railway.app/)
