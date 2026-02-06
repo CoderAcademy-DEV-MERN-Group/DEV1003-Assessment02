@@ -1,0 +1,18 @@
+services:
+  # Backend Service
+  backend-test:
+    build: ./
+    container_name: backend_test_container
+    environment:
+      # Pass sensitive info using root level environment variables and hardcode the rest
+      - NODE_ENV=test
+      - LOCAL_DB_URI=mongodb://mongo_db:27017/movie_db
+      - OMDB_API_KEY=${OMDB_API_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - TOKEN_HEADER_KEY=authorization
+      - DATABASE_URI=${DATABASE_URI} # Needed for tests injecting real DB URI
+      - DOTENV_CONFIG_QUIET=true
+    command: npm test
+    volumes:
+      # Bind mounts not needed as no hot reloading in tests, anonymous volume for node_modules only
+      - /app/node_modules
