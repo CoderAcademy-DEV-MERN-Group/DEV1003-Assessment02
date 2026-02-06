@@ -43,7 +43,12 @@ app.use(
 app.use(
   cors({
     // Replace with deployed frontend URL when applicable and update test in server.test.js
-    origin: ['http://localhost:3000', 'https://the-reel-canon.netlify.app', 'http://localhost'],
+    origin: [
+      'http://localhost:3000',
+      'https://the-reel-canon.netlify.app',
+      'http://localhost',
+      'http://frontend_service',
+    ],
     optionsSuccessStatus: 200,
   }),
 );
@@ -66,7 +71,7 @@ app.use('/reel-progress', ReelProgressRouter);
 /* Connect to database, using different DBs depending on environment
 (test uses mongodb-memory-server, handled in test setup) */
 const URImap = {
-  development: process.env.LOCAL_DB_URI || 'mongodb://localhost:27017/movie_db',
+  development: process.env.LOCAL_DB_URI || 'mongodb://mongo_db:27017/movie_db',
   production: process.env.DATABASE_URI,
 };
 // Default to development if NODE_ENV not set correctly
