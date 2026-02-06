@@ -41,4 +41,4 @@ jobs:
 
       # Run backend container tests
       - name: Run Backend Tests
-        run: docker compose -f docker-compose.test.yaml run --rm
+        run: docker compose -f docker-compose.test.yaml run --rm backend-test
