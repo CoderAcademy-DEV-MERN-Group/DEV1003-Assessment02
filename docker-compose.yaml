@@ -1,0 +1,50 @@
+services:
+  # Backend Service
+  backend:
+    build: ./
+    container_name: backend_container
+    command: npm run dev
+    # Map container port 5000 to host port 5000 for local dev debugging only
+    ports:
+      - '5000:5000'
+    environment:
+      # Pass sensitive info using root level environment variables and hardcode the rest
+      - NODE_ENV=development
+      - DATABASE_URI=${DATABASE_URI}
+      - LOCAL_DB_URI=${LOCAL_DB_URI}
+      - OMDB_API_KEY=${OMDB_API_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - TOKEN_HEADER_KEY=authorization
+      - DOTENV_CONFIG_QUIET=true
+    depends_on:
+      - mongo_db
+    volumes:
+      # Add application working directory as bind mount to enable hot reloading
+      - ./:/backend_app
+      # Create anonymous volume for node_modules to ensure container uses its own installed packages
+      - /backend_app/node_modules
+    networks:
+      - mern-network
+
+  # MongoDB Service
+  mongo_db:
+    image: mongo:8.2
+    container_name: mongo_container
+    ports:
+      - '27017:27017' # Exposed for local debugging tools (like Compass)
+    volumes:
+      # Docker managed named volume for isolated, persistent storage that containers can share
+      - mongo-data:/data/db
+    networks:
+      - mern-network
+
+# Define the network
+networks:
+  mern-network:
+    # Bridge networks allow containers to communicate internally without exposing ports
+    driver: bridge
+    name: mern-network
+
+# Define the volume for persistent database storage
+volumes:
+  mongo-data:
