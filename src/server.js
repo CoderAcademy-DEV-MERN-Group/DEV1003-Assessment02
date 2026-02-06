@@ -19,7 +19,7 @@ import {
   ReelProgressRouter,
 } from './routes/index';
 
-dotenv.config(); // Make .env data available for use
+dotenv.config({ quiet: true }); // Make .env data available for use
 validateEnv(); // Check all necessary variables are present in the .env file
 const app = express(); // Create the Express app object
 
@@ -43,7 +43,12 @@ app.use(
 app.use(
   cors({
     // Replace with deployed frontend URL when applicable and update test in server.test.js
-    origin: ['http://localhost:5000', 'https://the-reel-canon.netlify.app'],
+    origin: [
+      'http://localhost:3000',
+      'https://the-reel-canon.netlify.app',
+      'http://localhost',
+      'http://frontend_service',
+    ],
     optionsSuccessStatus: 200,
   }),
 );
@@ -51,9 +56,9 @@ app.use(
 /* Possibly add rate limiting here later using express-rate-limit package, 
 with different rate limit for general and login routes. */
 
-// Render will set env variables for HOST and PORT, will default to localhost:3000 in dev
-const HOST = process.env.HOST || 'localhost';
-const PORT = process.env.PORT || 3000;
+// Render will set env variables for HOST and PORT, will default to localhost:5000 in dev
+const HOST = process.env.HOST || '0.0.0.0';
+const PORT = process.env.PORT || 5000;
 
 // Attach routes to the app
 app.use('/auth', AuthRouter);
@@ -66,7 +71,7 @@ app.use('/reel-progress', ReelProgressRouter);
 /* Connect to database, using different DBs depending on environment
 (test uses mongodb-memory-server, handled in test setup) */
 const URImap = {
-  development: process.env.LOCAL_DB_URI || 'mongodb://localhost:27017/movie_db',
+  development: process.env.LOCAL_DB_URI || 'mongodb://mongo_db:27017/movie_db',
   production: process.env.DATABASE_URI,
 };
 // Default to development if NODE_ENV not set correctly
@@ -110,6 +115,13 @@ if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') {
     });
   });
 }
+
+// Health endpoint for health check
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    readyState: mongoose.connection.readyState,
+  });
+});
 
 // Add basic landing page message
 app.get('/', (req, res) => {
